@@ -7,8 +7,8 @@ using ZGenesis.Events;
 namespace ZGenesis {
     public class Patcher {
         public const bool DEBUG_MODE = true;
-        private static Queue<Event> eventQueue = new Queue<Event>();
-        private static List<Pair<List<Type>, Action<Event>>> eventHandlers = new List<Pair<List<Type>, Action<Event>>>();
+        private static readonly Queue<Event> eventQueue = new Queue<Event>();
+        private static readonly List<Pair<List<Type>, Action<Event>>> eventHandlers = new List<Pair<List<Type>, Action<Event>>>();
         private static Thread eventThread;
         private static bool eventThreadRunning = false;
         public Patcher() {
