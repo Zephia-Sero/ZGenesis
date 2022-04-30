@@ -6,13 +6,13 @@
 
   <ItemGroup>
     <Reference Include="0Harmony">
-      <HintPath>..\..\..\..\Downloads\0Harmony.dll</HintPath>
+      <HintPath>BuildDeps\0Harmony.dll</HintPath>
     </Reference>
     <Reference Include="Assembly-CSharp">
-      <HintPath>..\..\..\..\Desktop\TGPModding\v0.1.0\The Genesis Project_Data\Managed\Assembly-CSharp.dll</HintPath>
+      <HintPath>BuildDeps\Assembly-CSharp.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.CoreModule">
-      <HintPath>..\..\..\..\Desktop\TGPModding\v0.1.0\The Genesis Project_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
+      <HintPath>BuildDeps\UnityEngine.CoreModule.dll</HintPath>
     </Reference>
   </ItemGroup>
 
