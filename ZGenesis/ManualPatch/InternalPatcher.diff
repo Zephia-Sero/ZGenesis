@@ -1,0 +1,31 @@
+﻿1c1,28
+< 
+---
+> using System;
+> using System.IO;
+> using UnityEngine;
+> public class InternalPatcher {
+> 	private static bool modLoaderStarted;
+> 	public static void Patch() {
+> 		if (!InternalPatcher.modLoaderStarted) {
+> 			if (!Directory.Exists("./mods")) {
+> 				Directory.CreateDirectory("./mods");
+> 			}
+> 			if (!Directory.Exists("./logs")) {
+> 				Directory.CreateDirectory("./logs");
+> 			}
+> 			using (FileStream fileStream = File.Open("./logs/zgenesis_internal_init.log", FileMode.Create)) {
+> 				using (StreamWriter streamWriter = new StreamWriter(fileStream)) {
+> 					try {
+> 						Activator.CreateInstance("ZGenesis", "ZGenesis.Patcher");
+> 						streamWriter.WriteLine("Successfully initialized ZGenesis patcher.");
+> 					} catch (Exception ex) {
+> 						streamWriter.WriteLine("Failed to initialize ZGenesis patcher: " + ex.ToString());
+> 						Application.Quit();
+> 					}
+> 				}
+> 			}
+> 			InternalPatcher.modLoaderStarted = true;
+> 		}
+> 	}
+> }

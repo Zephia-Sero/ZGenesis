@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.1.32421.90
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZGenesis", "ZGenesis\ZGenesis.csproj", "{F4BAA557-149B-4B45-B745-A8C61EB932D2}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F4BAA557-149B-4B45-B745-A8C61EB932D2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F4BAA557-149B-4B45-B745-A8C61EB932D2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F4BAA557-149B-4B45-B745-A8C61EB932D2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F4BAA557-149B-4B45-B745-A8C61EB932D2}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {3002E71A-93F4-4CDB-BB19-E85AC65E4628}
+	EndGlobalSection
+EndGlobal
