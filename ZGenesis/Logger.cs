@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using HarmonyLib;
 
 namespace ZGenesis {
     public static class Logger {
@@ -10,13 +11,13 @@ namespace ZGenesis {
             ERROR,
             FATAL
         }
-        private static readonly StreamWriter logSW;
-        private static readonly StreamWriter latestlogSW;
+        private static StreamWriter logSW;
+        private static StreamWriter latestlogSW;
+        private static readonly string date = null;
         static Logger() {
-            FileStream fs = File.OpenWrite("logs/zgenesis" + DateTime.Now.ToString("_yyyy-MM-dd_HH-mm-ss") + ".log");
-            FileStream fs2 = File.OpenWrite("logs/zgenesis_latest.log");
-            logSW = new StreamWriter(fs);
-            latestlogSW = new StreamWriter(fs2);
+            date = DateTime.Now.ToString("_yyyy-MM-dd_HH-mm-ss");
+            FileLog.logPath = "logs/harmony.log";
+            Open(FileMode.Create);
         }
         public static void Log(string modname, string message, params object[] args) {
             Log(LogLevel.INFO, modname, message, args);
@@ -29,8 +30,26 @@ namespace ZGenesis {
             latestlogSW.WriteLine(
                 $"{time} <{level}> [{modname}] {string.Format(message, args)}"
             );
+            Reload();
+        }
+        public static void Flush() {
             logSW.Flush();
             latestlogSW.Flush();
+        }
+        public static void Reload() {
+            Flush();
+            Close();
+            Open(FileMode.Append);
+        }
+        public static void Close() {
+            logSW.Close();
+            latestlogSW.Close();
+        }
+        public static void Open(FileMode fm) {
+            FileStream fs = File.Open("logs/zgenesis" + date + ".log",fm);
+            FileStream fs2 = File.Open("logs/zgenesis_latest.log",fm);
+            logSW = new StreamWriter(fs);
+            latestlogSW = new StreamWriter(fs2);
         }
     }
 }

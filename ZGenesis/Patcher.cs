@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using System.Runtime.Versioning;
+using System.Linq;
 using System;
 using HarmonyLib;
 using System.Threading;
@@ -17,11 +19,10 @@ namespace ZGenesis {
                 Logger.Log("ZGenesis", "DEBUG MODE ENABLED. Enabling Harmony debug mode.");
             }
             Harmony.DEBUG = DEBUG_MODE;
-            Logger.Log("ZGenesis", "Instantiating Harmony");
-            Harmony harmony = new Harmony("com.zgenesis.patch");
-            EventPatches.PatchAll(harmony);
-            Logger.Log("ZGenesis", "Harmony patching completed.");
-            RegisterEventHandler(new List<Type> { typeof(Event) }, EventDebugger);
+            Logger.Log("ZGenesis", "Patching event hooks");
+            EventPatches.PatchAll();
+            if(DEBUG_MODE)
+                RegisterEventHandler(new List<Type> { typeof(Event) }, EventDebugger);
         }
         private static void EventDebugger(Event evt) {
             Logger.Log("ZGenesis DEBUG", evt.ToString());

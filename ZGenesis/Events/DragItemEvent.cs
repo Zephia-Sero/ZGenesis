@@ -6,11 +6,11 @@ using System.Threading.Tasks;
 
 namespace ZGenesis.Events {
     public class DragItemEvent : Event {
-        Item item;
-        Sylladex sylladex;
-        public DragItemEvent(Item item, Sylladex sylladex) {
-            this.item = item;
-            this.sylladex = sylladex;
+        public Item Item {get;}
+        public Sylladex Sylladex {get;}
+        public DragItemEvent(Sylladex sylladex, Item item) {
+            Item = item;
+            Sylladex = sylladex;
         }
         public override string ToString() => $"{GetType().Name}:\n\tSylladex:{sylladex}\n\tItem:{item}";
     }
