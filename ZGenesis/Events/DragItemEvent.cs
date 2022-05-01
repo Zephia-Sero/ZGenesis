@@ -12,6 +12,6 @@ namespace ZGenesis.Events {
             Item = item;
             Sylladex = sylladex;
         }
-        public override string ToString() => $"{GetType().Name}:\n\tSylladex:{sylladex}\n\tItem:{item}";
+        public override string ToString() => $"{GetType().Name}:\n\tSylladex:{Sylladex}\n\tItem:{Item}";
     }
 }

@@ -28,14 +28,12 @@ namespace ZGenesis.Attributes {
         }
         public void Patch(Harmony harmony, MethodInfo patchMethod) {
             try {
-                Logger.Log("ZGD", "Finding things...");
                 int splitidx = originalMethod.LastIndexOf('.');
                 string className = originalMethod.Substring(0, splitidx);
                 string methodName = originalMethod.Substring(1 + splitidx);
                 Type type = asm.GetType(className) ?? throw new Exception($"Type {className} not found in assembly {asm}.");
                 MethodInfo method = type.GetMethod(methodName) ?? throw new Exception($"Method {methodName} not found for type {className} in assembly {asm}.");
                 MethodBase methodB = method.GetBaseDefinition();
-                Logger.Log("ZGD", "Patching now!");
                 switch(patchType) {
                 case "prefix":
                     harmony.Patch(methodB, new HarmonyMethod(patchMethod));
