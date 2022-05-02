@@ -6,6 +6,7 @@ namespace ZGenesis {
     public static class Logger {
         public enum LogLevel {
             ESSENTIAL,
+            DEBUG,
             INFO,
             WARNING,
             ERROR,
@@ -25,10 +26,10 @@ namespace ZGenesis {
         public static void Log(LogLevel level, string modname, string message, params object[] args) {
             string time = DateTime.Now.ToString("HH:mm:ss+fff");
             logSW.WriteLine(
-                $"{time} <{level}> [{modname}] {string.Format(message,args)}"
+                $"{time} <{level}> " + new string(' ',9-level.ToString().Length) + $"[{modname}] {string.Format(message,args)}"
             );
             latestlogSW.WriteLine(
-                $"{time} <{level}> [{modname}] {string.Format(message, args)}"
+                $"{time} <{level}> " + new string(' ', 9 - level.ToString().Length) + $"[{modname}] {string.Format(message, args)}"
             );
             Reload();
         }

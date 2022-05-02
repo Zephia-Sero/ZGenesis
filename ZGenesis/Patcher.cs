@@ -1,31 +1,63 @@
-﻿using System.Collections.Generic;
-using System.Runtime.Versioning;
-using System.Linq;
-using System;
-using HarmonyLib;
+﻿using System;
 using System.Threading;
+using System.Collections.Generic;
+using System.Reflection;
+using HarmonyLib;
+using ZGenesis.Mod;
 using ZGenesis.Events;
+using UnityEngine;
 
 namespace ZGenesis {
-    public class Patcher {
+    public static class Patcher {
         public const bool DEBUG_MODE = true;
         private static readonly Queue<Event> eventQueue = new Queue<Event>();
         private static readonly List<Pair<List<Type>, Action<Event>>> eventHandlers = new List<Pair<List<Type>, Action<Event>>>();
         private static Thread eventThread;
         private static bool eventThreadRunning = false;
-        public Patcher() {
-            Logger.Log("ZGenesis", "Patcher successfully instantiated.");
+        public static readonly List<GenesisMod> loadedMods = new List<GenesisMod>();
+        private const int MAX_DEPENDENCY_ATTEMPTS = 1000;
+        static Patcher() {
+            Logger.Log(Logger.LogLevel.ESSENTIAL, "ZGenesis", "Patcher successfully instantiated.");
             if(DEBUG_MODE) {
-                Logger.Log("ZGenesis", "DEBUG MODE ENABLED. Enabling Harmony debug mode.");
+                Logger.Log(Logger.LogLevel.DEBUG, "ZGenesis", "DEBUG MODE ENABLED. Enabling Harmony debug mode.");
             }
             Harmony.DEBUG = DEBUG_MODE;
-            Logger.Log("ZGenesis", "Patching event hooks");
-            EventPatches.PatchAll();
+            Logger.Log(Logger.LogLevel.ESSENTIAL, "ZGenesis", "Loading ZGenesis BaseMod");
+            GenesisMod basemod = new BaseMod.BaseMod();
+
+            Logger.Log(Logger.LogLevel.ESSENTIAL, "ZGenesis", "Checking mod dependencies");
+            bool satisfiedDependencies = true;
+            loadedMods.ForEach(mod => {
+                List<string> missing = mod.DependenciesUnavailable();
+                if(missing.Count > 0) {
+                    satisfiedDependencies = false;
+                    missing.ForEach(dependency => {
+                        Logger.Log(Logger.LogLevel.FATAL, mod.Name, "Could not find patcher dependency '" + dependency + "'!");
+                    });
+                }
+            });
+            if(!satisfiedDependencies) {
+                Logger.Log(Logger.LogLevel.FATAL, "ZGenesis", "Could not load mods. Reason: Failed to find required patcher dependencies.");
+                Application.Quit(1);
+            }
+            int i = 0;
+            while(DependentPatcher.incompletePatches.Count > 0 && i < MAX_DEPENDENCY_ATTEMPTS) {
+                loadedMods.ForEach(mod => {
+                    if(!mod.PatchingFinished)
+                        mod.TryPatch();
+                });
+                i++;
+            }
+            if(i == MAX_DEPENDENCY_ATTEMPTS) {
+                Logger.Log(Logger.LogLevel.FATAL, "ZGenesis", "Mod patching took more than {0} cycles. Possible dependency cycle?", MAX_DEPENDENCY_ATTEMPTS);
+                Application.Quit(1);
+            }
+            
             if(DEBUG_MODE)
                 RegisterEventHandler(new List<Type> { typeof(Event) }, EventDebugger);
         }
         private static void EventDebugger(Event evt) {
-            Logger.Log("ZGenesis DEBUG", evt.ToString());
+            Logger.Log(Logger.LogLevel.DEBUG, "ZGenesis", evt.ToString());
         }
         private static void EventThreadFunc() {
             eventThreadRunning = true;
@@ -40,6 +72,8 @@ namespace ZGenesis {
             }
             eventThreadRunning = false;
         }
+        // EnqueueEvent method for transpilers.
+        public readonly static MethodInfo m_Patcher__EnqueueEvent = typeof(Patcher).GetMethod(nameof(Patcher.EnqueueEvent));
         public static void EnqueueEvent(Event e) {
             eventQueue.Enqueue(e);
             if(!eventThreadRunning) {
