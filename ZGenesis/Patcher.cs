@@ -43,6 +43,7 @@ namespace ZGenesis {
                 Logger.Log(Logger.LogLevel.FATAL, "ZGenesis", "Could not load mods. Reason: Failed to find required patcher dependencies.");
                 Application.Quit(1);
             }
+            Logger.Log(Logger.LogLevel.ESSENTIAL, "ZGenesis", "Patching mods");
             int i = 0;
             while(DependentPatcher.incompletePatches.Count > 0 && i < MAX_DEPENDENCY_ATTEMPTS) {
                 loadedMods.ForEach(mod => {
@@ -55,9 +56,11 @@ namespace ZGenesis {
                 Logger.Log(Logger.LogLevel.FATAL, "ZGenesis", "Mod patching took more than {0} cycles. Possible dependency cycle?", MAX_DEPENDENCY_ATTEMPTS);
                 Application.Quit(1);
             }
+            Logger.Log(Logger.LogLevel.ESSENTIAL, "ZGenesis", "Running PostPatches method in all mods.");
             loadedMods.ForEach(mod => {
                 mod.PostPatches();
             });
+            Logger.Log(Logger.LogLevel.ESSENTIAL, "ZGenesis", "Mod loading completed.");
             if(DEBUG_MODE)
                 RegisterEventHandler(new List<Type> { typeof(Event) }, EventDebugger);
         }
