@@ -131,8 +131,6 @@ namespace ZGenesis {
             }
             eventThreadRunning = false;
         }
-        // EnqueueEvent method for transpilers.
-        public readonly static MethodInfo m_Patcher__EnqueueEvent = typeof(Patcher).GetMethod(nameof(Patcher.EnqueueEvent));
         public static void EnqueueEvent(Event e) {
             eventQueue.Enqueue(e);
             if(!eventThreadRunning) {
