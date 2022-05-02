@@ -18,6 +18,9 @@ namespace ZGenesis {
         private static bool eventThreadRunning = false;
         public static readonly List<GenesisMod> loadedMods = new List<GenesisMod>();
         private const int MAX_DEPENDENCY_ATTEMPTS = 1000;
+
+        private static MSPAOrthoController cam = null;
+
         static Patcher() {
             Logger.Log(Logger.LogLevel.ESSENTIAL, "ZGenesis", "Patcher successfully instantiated.");
             if(DEBUG_MODE) {
@@ -61,8 +64,13 @@ namespace ZGenesis {
                 mod.PostPatches();
             });
             Logger.Log(Logger.LogLevel.ESSENTIAL, "ZGenesis", "Mod loading completed.");
-            if(DEBUG_MODE)
+            if(DEBUG_MODE) {
                 RegisterEventHandler(new List<Type> { typeof(Event) }, EventDebugger);
+                RegisterEventHandler(new List<Type> { typeof(CameraRotateEvent) }, evt => {
+                    CameraRotateEvent e = (CameraRotateEvent) evt;
+                    if(cam is null) cam = e.CamController;
+                });
+            }
         }
         private static List<Type> LoadModAssemblies() {
             List<Type> loadedTypes = new List<Type>();
@@ -106,6 +114,9 @@ namespace ZGenesis {
         }
         private static void EventDebugger(Event evt) {
             Logger.Log(Logger.LogLevel.DEBUG, "ZGenesis", evt.ToString());
+            if(!(cam is null)) {
+                cam.cameraAngle += 25;
+            }
         }
         private static void EventThreadFunc() {
             eventThreadRunning = true;
