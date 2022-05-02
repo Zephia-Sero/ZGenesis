@@ -20,5 +20,6 @@ namespace ZGenesis.BaseMod {
                 patcher.AddDependency("com.prebasemod.*");
             });
         }
+        public override void RegisterEventHandlers() { }
     }
 }
