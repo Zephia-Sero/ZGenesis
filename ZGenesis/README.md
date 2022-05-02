@@ -1,1 +1,0 @@
-A new version of The Genesis Project Mod Patcher.
