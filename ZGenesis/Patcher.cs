@@ -125,7 +125,7 @@ namespace ZGenesis {
                 foreach(Pair<List<Type>, Action<Event>> handler in eventHandlers) {
                     List<Type> types = handler.a;
                     foreach(Type type in types) {
-                        if(evt.GetType().IsSubclassOf(type)) handler.b(evt);
+                        if(evt.GetType().IsSubclassOf(type) || evt.GetType() == type) handler.b(evt);
                     }
                 }
             }
