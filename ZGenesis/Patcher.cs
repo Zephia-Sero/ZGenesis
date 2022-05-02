@@ -1,7 +1,9 @@
 ﻿using HarmonyLib;
 using System;
+using System.IO;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Linq;
 using System.Threading;
 using UnityEngine;
 using ZGenesis.Events;
@@ -22,9 +24,10 @@ namespace ZGenesis {
                 Logger.Log(Logger.LogLevel.DEBUG, "ZGenesis", "DEBUG MODE ENABLED. Enabling Harmony debug mode.");
             }
             Harmony.DEBUG = DEBUG_MODE;
-            Logger.Log(Logger.LogLevel.ESSENTIAL, "ZGenesis", "Loading ZGenesis BaseMod");
-            GenesisMod basemod = new BaseMod.BaseMod();
-
+            Logger.Log(Logger.LogLevel.ESSENTIAL, "ZGenesis", "Loading mods");
+            LoadModAssemblies().ForEach(type => {
+                type.GetConstructor(new Type[] { }).Invoke(new object[] { });
+            });
             Logger.Log(Logger.LogLevel.ESSENTIAL, "ZGenesis", "Checking mod dependencies");
             bool satisfiedDependencies = true;
             loadedMods.ForEach(mod => {
@@ -52,9 +55,48 @@ namespace ZGenesis {
                 Logger.Log(Logger.LogLevel.FATAL, "ZGenesis", "Mod patching took more than {0} cycles. Possible dependency cycle?", MAX_DEPENDENCY_ATTEMPTS);
                 Application.Quit(1);
             }
-            
             if(DEBUG_MODE)
                 RegisterEventHandler(new List<Type> { typeof(Event) }, EventDebugger);
+        }
+        private static List<Type> LoadModAssemblies() {
+            List<Type> loadedTypes = new List<Type>();
+            bool loadFailed = false;
+            foreach(string filename in Directory.GetFiles("mods/", "*.dll").AddItem("ZGenesis.dll")) {
+                try {
+                    Assembly asm = Assembly.GetAssembly(typeof(Patcher));
+                    if(filename != "ZGenesis") {
+                        asm = Assembly.LoadFrom(filename);
+                        if(asm == null) {
+                            Logger.Log(Logger.LogLevel.FATAL, "ZGenesis", "Failed to load modfile '{0}'. Assembly could not be loaded for unknown reason.", filename);
+                            loadFailed = true;
+                        }
+                    }
+                    foreach(Type type in asm.ExportedTypes) {
+                        if(type.IsSubclassOf(typeof(GenesisMod))) {
+                            IEnumerable<Attributes.GenesisModAttribute> attrs = type.GetCustomAttributes<Attributes.GenesisModAttribute>();
+                            int num = attrs.Count();
+                            if(num == 0) {
+                                Logger.Log(Logger.LogLevel.ERROR, "ZGenesis", "No GenesisMod attribute found. Modfile: '{0}', type: {1}", filename, type.ToString());
+                                continue;
+                            }
+                            if(num > 1) {
+                                Logger.Log(Logger.LogLevel.ERROR, "ZGenesis", "More than one GenesisMod attribute found. Modfile: '{0}', type: {1}", filename, type.ToString());
+                                continue;
+                            }
+                            Logger.Log(Logger.LogLevel.INFO, "ZGenesis", "Found Mod class in '{0}': {1}", filename, type.ToString());
+                            loadedTypes.Add(type);
+                        }
+                    }
+                } catch(Exception e) {
+                    Logger.Log(Logger.LogLevel.FATAL, "ZGenesis", "Failed to load modfile '{0}'. Assembly could not be loaded.\n{1}", filename, e);
+                    loadFailed = true;
+                }
+            }
+            if(loadFailed) {
+                Logger.Log(Logger.LogLevel.FATAL, "ZGenesis", "Failed to load mods from mods/ directory for above reasons. Exiting");
+                Application.Quit(1);
+            }
+            return loadedTypes;
         }
         private static void EventDebugger(Event evt) {
             Logger.Log(Logger.LogLevel.DEBUG, "ZGenesis", evt.ToString());
