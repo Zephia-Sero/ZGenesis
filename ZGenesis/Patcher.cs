@@ -11,7 +11,7 @@ using ZGenesis.Mod;
 
 namespace ZGenesis {
     public static class Patcher {
-        public const bool DEBUG_MODE = true;
+        public const bool DEBUG_MODE = false;
         private static readonly Queue<Event> eventQueue = new Queue<Event>();
         private static readonly List<Pair<List<Type>, Action<Event>>> eventHandlers = new List<Pair<List<Type>, Action<Event>>>();
         private static Thread eventThread;
@@ -22,7 +22,9 @@ namespace ZGenesis {
         static Patcher() {
             Logger.Log(Logger.LogLevel.ESSENTIAL, "ZGenesis", "Patcher successfully instantiated.");
             if(DEBUG_MODE) {
+#pragma warning disable CS0162 // Unreachable code detected
                 Logger.Log(Logger.LogLevel.DEBUG, "ZGenesis", "DEBUG MODE ENABLED. Enabling Harmony debug mode.");
+#pragma warning restore CS0162 // Unreachable code detected
             }
             Harmony.DEBUG = DEBUG_MODE;
             Logger.Log(Logger.LogLevel.ESSENTIAL, "ZGenesis", "Loading mods");
@@ -63,9 +65,11 @@ namespace ZGenesis {
             });
             Logger.Log(Logger.LogLevel.ESSENTIAL, "ZGenesis", "Mod loading completed.");
             if(DEBUG_MODE) {
+#pragma warning disable CS0162 // Unreachable code detected
                 RegisterEventHandler(new List<Type> { typeof(Event) }, evt => {
                     Logger.Log(Logger.LogLevel.DEBUG, "ZGenesis", evt.ToString());
                 });
+#pragma warning restore CS0162 // Unreachable code detected
             }
         }
         private static List<Type> LoadModAssemblies() {
