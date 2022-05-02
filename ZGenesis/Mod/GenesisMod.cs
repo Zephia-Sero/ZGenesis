@@ -16,7 +16,7 @@ namespace ZGenesis.Mod {
                 Patcher.loadedMods.Add(this);
             }
         }
-        public abstract void RegisterEventHandlers();
+        public abstract void PostPatches();
         public virtual bool TryPatch() {
             if(PatchingFinished) return true;
             PatchingFinished = true;

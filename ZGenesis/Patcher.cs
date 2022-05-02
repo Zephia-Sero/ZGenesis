@@ -55,6 +55,9 @@ namespace ZGenesis {
                 Logger.Log(Logger.LogLevel.FATAL, "ZGenesis", "Mod patching took more than {0} cycles. Possible dependency cycle?", MAX_DEPENDENCY_ATTEMPTS);
                 Application.Quit(1);
             }
+            loadedMods.ForEach(mod => {
+                mod.PostPatches();
+            });
             if(DEBUG_MODE)
                 RegisterEventHandler(new List<Type> { typeof(Event) }, EventDebugger);
         }
