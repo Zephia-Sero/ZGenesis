@@ -11,7 +11,7 @@ namespace ZGenesis.Mod {
         public static List<string> incompletePatches = new List<string>();
         public static List<string> completedPatches = new List<string>();
         
-        public List<string> dependencies = new List<String>();
+        public List<string> dependencies = new List<string>();
         public bool patchingFinished = false;
 
         public Harmony harmonyInstance;
