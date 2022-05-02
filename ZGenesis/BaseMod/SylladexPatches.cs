@@ -12,7 +12,7 @@ namespace ZGenesis.BaseMod {
         // Inventory Events
         [ModPatch("postfix", "Assembly-CSharp", "Sylladex.SetDragItem")]
         private static void OnDragItem(Sylladex __instance, ref Item item) {
-            Patcher.EnqueueEvent(new DragItemEvent(__instance, item));
+            new DragItemEvent(__instance, item);
         }
 
         private readonly static MethodInfo m_Modus__UpdatePositions = typeof(Modus).GetMethod("UpdatePositions", BindingFlags.NonPublic | BindingFlags.Instance);
@@ -28,7 +28,7 @@ namespace ZGenesis.BaseMod {
                     yield return new CodeInstruction(OpCodes.Ldarg_0);
                     yield return new CodeInstruction(OpCodes.Ldfld, f_Modus__sylladex);
                     yield return new CodeInstruction(OpCodes.Newobj, c_SylladexAddItemEvent);
-                    yield return new CodeInstruction(OpCodes.Call, Patcher.m_Patcher__EnqueueEvent);
+                    yield return new CodeInstruction(OpCodes.Pop);
                 }
             }
         }
