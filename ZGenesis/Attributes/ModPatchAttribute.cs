@@ -1,11 +1,8 @@
-﻿using System;
-using HarmonyLib;
-using System.Reflection;
-using System.Collections.Generic;
+﻿using HarmonyLib;
+using System;
 using System.Linq;
-using System.Text;
+using System.Reflection;
 using UnityEngine;
-using System.Threading.Tasks;
 
 namespace ZGenesis.Attributes {
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]

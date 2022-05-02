@@ -1,6 +1,6 @@
-﻿using System;
+﻿using HarmonyLib;
+using System;
 using System.IO;
-using HarmonyLib;
 
 namespace ZGenesis {
     public static class Logger {

@@ -1,7 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using HarmonyLib;
+using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
-using HarmonyLib;
 using ZGenesis.Attributes;
 using ZGenesis.Events;
 

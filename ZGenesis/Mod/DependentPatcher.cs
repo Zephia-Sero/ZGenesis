@@ -1,10 +1,10 @@
-﻿using System;
+﻿using HarmonyLib;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using HarmonyLib;
-using ZGenesis.Attributes;
 using UnityEngine;
+using ZGenesis.Attributes;
 
 namespace ZGenesis.Mod {
     public class DependentPatcher {
