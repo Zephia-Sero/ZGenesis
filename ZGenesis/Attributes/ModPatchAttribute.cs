@@ -29,7 +29,10 @@ namespace ZGenesis.Attributes {
                 string className = originalMethod.Substring(0, splitidx);
                 string methodName = originalMethod.Substring(1 + splitidx);
                 Type type = asm.GetType(className) ?? throw new Exception($"Type {className} not found in assembly {asm}.");
-                MethodInfo method = type.GetMethod(methodName) ?? throw new Exception($"Method {methodName} not found for type {className} in assembly {asm}.");
+                MethodInfo method = type.GetMethod(methodName,
+                                    BindingFlags.Instance  | BindingFlags.Static |
+                                    BindingFlags.NonPublic | BindingFlags.Public )
+                                    ?? throw new Exception($"Method {methodName} not found for type {className} in assembly {asm}.");
                 MethodBase methodB = method.GetBaseDefinition();
                 switch(patchType) {
                 case "prefix":
