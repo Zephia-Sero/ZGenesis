@@ -10,7 +10,7 @@ namespace ZGenesis.Events {
         public float Angle { get; }
         public CameraRotateEvent(MSPAOrthoController camController, float angle) {
             CamController = camController;
-            Angle = angle;
+            Angle = -angle;
         }
         public override string ToString() => $"{GetType().Name}:\n\tCamController:{CamController}\n\tAngle:{Angle}";
     }
