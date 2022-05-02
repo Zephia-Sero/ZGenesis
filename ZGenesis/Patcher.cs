@@ -63,7 +63,9 @@ namespace ZGenesis {
             });
             Logger.Log(Logger.LogLevel.ESSENTIAL, "ZGenesis", "Mod loading completed.");
             if(DEBUG_MODE) {
-                RegisterEventHandler(new List<Type> { typeof(Event) }, EventDebugger);
+                RegisterEventHandler(new List<Type> { typeof(Event) }, evt => {
+                    Logger.Log(Logger.LogLevel.DEBUG, "ZGenesis", evt.ToString());
+                });
             }
         }
         private static List<Type> LoadModAssemblies() {
@@ -105,9 +107,6 @@ namespace ZGenesis {
                 Application.Quit(1);
             }
             return loadedTypes;
-        }
-        private static void EventDebugger(Event evt) {
-            Logger.Log(Logger.LogLevel.DEBUG, "ZGenesis", evt.ToString());
         }
         private static void EventThreadFunc() {
             eventThreadRunning = true;
