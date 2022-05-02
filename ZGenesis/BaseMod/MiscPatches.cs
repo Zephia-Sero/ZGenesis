@@ -31,11 +31,11 @@ namespace ZGenesis.BaseMod {
         }
         [ModPatch("postfix", "Assembly-CSharp", "CameraRotationControls.RotateLeft")]
         private static void OnCameraRotateLeft(ref MSPAOrthoController ___cameraController) {
-            new CameraRotateEvent(___cameraController, 180f);
+            new CameraRotateEvent(___cameraController, -180f);
         }
         [ModPatch("postfix", "Assembly-CSharp", "CameraRotationControls.RotateRight")]
         private static void OnCameraRotateRight(MSPAOrthoController ___cameraController) {
-            new CameraRotateEvent(___cameraController, -180f);
+            new CameraRotateEvent(___cameraController, 180f);
         }
     }
 }
