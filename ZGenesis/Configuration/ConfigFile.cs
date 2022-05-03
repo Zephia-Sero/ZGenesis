@@ -55,7 +55,7 @@ namespace ZGenesis.Configuration {
                             }
                             if(multilineEndIdx != -1) {
                                 multilineComment = false;
-                                line = line.Substring(multilineEndIdx);
+                                line = line.Substring(multilineEndIdx+2);
                             }
                             
                             if(multilineComment && !multilineJustSet) continue;
