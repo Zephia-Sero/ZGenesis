@@ -10,8 +10,8 @@ namespace ZGenesis.Configuration {
     public class ConfigFile {
         public static readonly string[] CONFIG_VALUE_TYPES;
         public string Path { get; }
-        public Dictionary<string, object> Options = new Dictionary<string, object>();
-        private GenesisMod owner;
+        public Dictionary<string, object> options = new Dictionary<string, object>();
+        private readonly GenesisMod owner;
         
         static ConfigFile() {
             CONFIG_VALUE_TYPES = Enum.GetNames(typeof(EConfigValueType));
@@ -64,19 +64,21 @@ namespace ZGenesis.Configuration {
 
                         bool successfulSplit = true;
                         if(type == null) {
-                            Logger.Log(Logger.LogLevel.ERROR, owner.Name, "CONFIG ERROR: Line {0}: Could not find type for config entry.", lineNum);
+                            Logger.Log(Logger.LogLevel.ERROR, owner.Name, "CONFIG ERROR: Line {0}: Could not find type for config entry in file '{1}'.", lineNum, Path);
                             successfulSplit = false;
                         }
                         if(key == null) {
-                            Logger.Log(Logger.LogLevel.ERROR, owner.Name, "CONFIG ERROR: Line {0}: Could not find key for config entry.", lineNum);
+                            Logger.Log(Logger.LogLevel.ERROR, owner.Name, "CONFIG ERROR: Line {0}: Could not find key for config entry in file '{1}'.", lineNum, Path);
                             successfulSplit = false;
+                        } else if(options.ContainsKey(key)) {
+                            Logger.Log(Logger.LogLevel.ERROR, owner.Name, "CONFIG ERROR: Line {0}: Duplicate configuration key in file '{1}'", lineNum, Path);
                         }
                         string value = "";
                         if(valueStart != -1) {
                             value = line.Substring(valueStart).Trim();
                         }
                         if(value == "") {
-                            Logger.Log(Logger.LogLevel.ERROR, owner.Name, "CONFIG ERROR: Line {0}: Could not find value for config entry.", lineNum);
+                            Logger.Log(Logger.LogLevel.ERROR, owner.Name, "CONFIG ERROR: Line {0}: Could not find value for config entry in file '{1}'.", lineNum, Path);
                             successfulSplit = false;
                         }
                         if(!successfulSplit) continue;
