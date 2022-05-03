@@ -17,8 +17,6 @@ namespace ZGenesis.Configuration {
         I32,
         U64,
         I64,
-        USize,
-        ISize,
         F32,
         F64,
         F128,
