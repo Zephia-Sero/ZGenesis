@@ -32,9 +32,9 @@ namespace ZGenesis.Mod {
         public void LoadConfig() {
             config.ForEach(cfgfile => {
                 if(defaults.ContainsKey(cfgfile))
-                    new ConfigFile(this, cfgfile, defaults[cfgfile]);
+                    new ConfigFile(this, cfgfile, defaults[cfgfile]).LoadConfig();
                 else
-                    new ConfigFile(this, cfgfile);
+                    new ConfigFile(this, cfgfile).LoadConfig();
             });
         }
         protected void AddDefaultConfig(string filename, string key, ConfigValue value) {

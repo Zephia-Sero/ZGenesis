@@ -8,15 +8,12 @@ using ZGenesis.Mod;
 
 namespace ZGenesis.Configuration {
     public class ConfigFile {
-        public static readonly string[] CONFIG_VALUE_TYPES;
-        public static Dictionary<string, ConfigValue> options = new Dictionary<string, ConfigValue>();
-        public static List<ConfigFile> unloadedConfigFiles = new List<ConfigFile>();
+        public static readonly string[] CONFIG_VALUE_TYPES = Enum.GetNames(typeof(EConfigValueType));
+        public static Dictionary<string, ConfigFile> loadedConfigFiles = new Dictionary<string, ConfigFile>();
 
+        public Dictionary<string, ConfigValue> options = new Dictionary<string, ConfigValue>();
         public string Path { get; }
-        public readonly ConfigHeader header;
         private readonly string ownerName;
-        internal delegate bool OnLoad();
-        internal OnLoad onLoad;
         private readonly Dictionary<string, ConfigValue> defaults;
         static ConfigFile() {
             CONFIG_VALUE_TYPES = Enum.GetNames(typeof(EConfigValueType));
@@ -33,31 +30,10 @@ namespace ZGenesis.Configuration {
                 File.Create(Path).Close();
             }
             ownerName = owner.Name;
-            header = new ConfigHeader(ownerName, Path);
-            onLoad = new OnLoad(() => { return true; });
-            unloadedConfigFiles.Add(this);
             this.defaults = defaults;
         }
         public ConfigFile(GenesisMod owner, string path) : this(owner, path, new Dictionary<string, ConfigValue>()) { }
-        public void PreloadPrep() {
-            foreach(string loadFirst in header.loadAfter) {
-                unloadedConfigFiles.ForEach(cfg => {
-                    if(cfg.Path == loadFirst) {
-                        cfg.onLoad += TryLoadConfig;
-                    }
-                });
-            }
-        }
-        public bool TryLoadConfig() {
-            foreach(string loadFirst in header.loadAfter) {
-                if(unloadedConfigFiles.Any(cfg => {
-                    return cfg.Path == loadFirst;
-                })) return false;
-            }
-            ForceLoadConfig();
-            return true;
-        }
-        public void ForceLoadConfig() {
+        public void LoadConfig() {
             try {
                 using(FileStream fs = new FileStream(Path, FileMode.OpenOrCreate, FileAccess.Read)) {
                     using(StreamReader sr = new StreamReader(fs)) {
@@ -135,7 +111,7 @@ namespace ZGenesis.Configuration {
                             }
                             if(t != EConfigValueType.COUNT) {
                                 ConfigValue val = ConfigValue.TryCreateFromString(ownerName, value, t);
-                                options.Add(key, val);
+                                this[key] = val;
                             } else {
                                 Logger.Log(Logger.LogLevel.ERROR, ownerName, "CONFIG ERROR: Line {0}: Invalid type '{1}' for configuration key '{2}' in file '{3}'.", lineNum, type, key, Path);
                             }
@@ -145,11 +121,34 @@ namespace ZGenesis.Configuration {
             } catch(Exception e) {
                 Logger.Log(Logger.LogLevel.ERROR, ownerName, "CONFIG ERROR: Could not open config file '{0}'. Exception: {1}", Path, e);
             }
-            foreach(KeyValuePair<string, ConfigValue> keyValuePair in defaults) {
-                if(
+            Logger.Log("test", "1");
+            foreach(string key in defaults.Keys) {
+                Logger.Log("test", key);
+                if(!options.ContainsKey(key)) {
+                    this[key] = defaults[key];
+                }
             }
-            unloadedConfigFiles.Remove(this);
-            onLoad();
+            loadedConfigFiles.Add(Path.Substring(7), this); // substring(7) to remove "config/" from the filename
+        }
+        private void AddToFile(string key, ConfigValue value) {
+            using(FileStream fs = new FileStream(Path, FileMode.Append)) {
+                using(StreamWriter sr = new StreamWriter(fs)) {
+                    string type = Enum.GetName(typeof(EConfigValueType), value.type).ToLower();
+                    sr.WriteLine($"{type} {key} = {value.GetValueRaw()}");
+                }
+            }
+        }
+        public ConfigValue this[string key] {
+            get {
+                if(options.ContainsKey(key)) return options[key];
+                throw new KeyNotFoundException($"Could not find key '{key}' in config file '{Path}'");
+            }
+            set {
+                if(!options.ContainsKey(key)) {
+                    AddToFile(key, value);
+                }
+                options[key] = value;
+            }
         }
     }
 }

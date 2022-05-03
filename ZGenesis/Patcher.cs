@@ -18,7 +18,6 @@ namespace ZGenesis {
         private static Thread eventThread;
         private static bool eventThreadRunning = false;
         public static readonly List<GenesisMod> loadedMods = new List<GenesisMod>();
-        private const int MAX_CONFIG_ATTEMPTS = 250;
 
         static Patcher() {
             Logger.Log(Logger.LogLevel.ESSENTIAL, "ZGenesis", "Patcher successfully instantiated.");
@@ -68,19 +67,6 @@ namespace ZGenesis {
             loadedMods.ForEach(mod => {
                 mod.LoadConfig();
             });
-            int i = 0;
-            while(ConfigFile.unloadedConfigFiles.Count > 0 && i < MAX_CONFIG_ATTEMPTS) {
-                int count = ConfigFile.unloadedConfigFiles.Count;
-                for(int idx = 0; idx < count; idx++) {
-                    int dec = ConfigFile.unloadedConfigFiles[idx].TryLoadConfig() ? 1 : 0;
-                    idx -= dec;
-                    count -= dec;
-                }
-            }
-            if(i == MAX_CONFIG_ATTEMPTS) {
-                Logger.Log(Logger.LogLevel.FATAL, "ZGenesis", "Config loading took more than {0} cycles. Possible dependency cycle?", MAX_CONFIG_ATTEMPTS);
-                Application.Quit(1);
-            }
             Logger.Log(Logger.LogLevel.ESSENTIAL, "ZGenesis", "Stage: PostConfig");
             loadedMods.ForEach(mod => { mod.PostConfig(); });
         }

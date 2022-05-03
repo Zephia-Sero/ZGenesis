@@ -9,7 +9,9 @@ using ZGenesis.Mod;
 namespace ZGenesis.Configuration {
     public class ConfigValue {
         private object value;
-        private readonly Type type;
+        public readonly EConfigValueType type;
+        public readonly Type valueType;
+
         public static Type TypeConvert(string modName, EConfigValueType configValueType) {
             switch(configValueType) {
             case EConfigValueType.Bool:
@@ -54,13 +56,14 @@ namespace ZGenesis.Configuration {
             if(val == null) {
                 Logger.Log(Logger.LogLevel.ERROR, modName, "CONFIG ERROR: Invalid value string (\"{0}\") attempted assignment to invalid type '{1}'.", value, type);
             }
-            return new ConfigValue(modName, val, t);
+            return new ConfigValue(modName, val, t, type);
         }
         public ConfigValue(string modName, object value, EConfigValueType type) {
-            this.type = TypeConvert(modName, type);
+            valueType = TypeConvert(modName, type);
             SetValue(modName, value);
         }
-        private ConfigValue(string modName, object value, Type type) {
+        private ConfigValue(string modName, object value, Type vType, EConfigValueType type) {
+            valueType = vType;
             this.type = type;
             SetValue(modName, value);
         }
@@ -68,10 +71,10 @@ namespace ZGenesis.Configuration {
             return value;
         }
         public void SetValue(string modName, object newValue) {
-            if(type.IsAssignableFrom(newValue.GetType()))
+            if(valueType.IsAssignableFrom(newValue.GetType()))
                 value = newValue;
             else
-                Logger.Log(Logger.LogLevel.ERROR, modName, "CONFIG ERROR: Invalid value ({0}) attempted assignment to config value with type '{1}'.", newValue, type);
+                Logger.Log(Logger.LogLevel.ERROR, modName, "CONFIG ERROR: Invalid value ({0}) attempted assignment to config value with type '{1}'.", newValue, valueType);
         }
         private static object ParseStringValue(string modName, string value, Type type) {
             TypeConverter typeConverter = TypeDescriptor.GetConverter(type);
@@ -83,8 +86,8 @@ namespace ZGenesis.Configuration {
             }
         }
         public T GetValue<T>() {
-            if(typeof(T).IsAssignableFrom(type)) return (T) value;
-            Logger.Log(Logger.LogLevel.ERROR, "ZGenesis", "CONFIG ERROR: Cannot convert value ({0}) to type '{1}'. Expected type: '{2}'.", value, typeof(T), type);
+            if(typeof(T).IsAssignableFrom(valueType)) return (T) value;
+            Logger.Log(Logger.LogLevel.ERROR, "ZGenesis", "CONFIG ERROR: Cannot convert value ({0}) to type '{1}'. Expected type: '{2}'.", value, typeof(T), valueType);
             return default;
         }
     }
