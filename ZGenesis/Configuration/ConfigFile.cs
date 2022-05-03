@@ -9,9 +9,11 @@ using ZGenesis.Mod;
 namespace ZGenesis.Configuration {
     public class ConfigFile {
         public static readonly string[] CONFIG_VALUE_TYPES;
-        public string Path { get; }
         public static Dictionary<string, ConfigValue> options = new Dictionary<string, ConfigValue>();
-        public Dictionary<string, ConfigValue> fileOptions = new Dictionary<string, ConfigValue>();
+        public static List<string> loaded = new List<string>();
+
+        public string Path { get; }
+        public readonly ConfigHeader header;
         private readonly string ownerName;
         
         static ConfigFile() {
@@ -19,16 +21,16 @@ namespace ZGenesis.Configuration {
         }
         public ConfigFile(GenesisMod owner, string path) {
             Path = path;
-            this.ownerName = owner.Name;
-            LoadFile();
+            ownerName = owner.Name;
+            header = new ConfigHeader(Path);
         }
-
-        public void LoadFile() {
+        public void ForceLoadFile() {
             using(FileStream fs = new FileStream(Path, FileMode.OpenOrCreate, FileAccess.Read)) {
                 using(StreamReader sr = new StreamReader(fs)) {
                     string line;
                     bool multilineComment = false;
                     bool multilineJustSet = false;
+
                     int lineNum = 0;
                     while((line = sr.ReadLine()) != null) {
                         lineNum++;
@@ -94,15 +96,8 @@ namespace ZGenesis.Configuration {
                         }
                         if(t != EConfigValueType.COUNT) {
                             ConfigValue val = ConfigValue.TryCreateFromString(ownerName, value, t);
-
-                            if(key.StartsWith("__config__.")) {
-                                key = key.Substring(key.IndexOf('.'));
-                                if(overriding) fileOptions[key] = val;
-                                else fileOptions.Add(key, val);
-                            } else {
-                                if(overriding) options[key] = val;
-                                else options.Add(key, val);
-                            }
+                            if(overriding) options[key] = val;
+                            else options.Add(key, val);
                         } else {
                             Logger.Log(Logger.LogLevel.ERROR, ownerName, "CONFIG ERROR: Line {0}: Invalid type '{1}' for configuration key '{2}' in file '{3}'.", lineNum, type, key, Path);
                         }
