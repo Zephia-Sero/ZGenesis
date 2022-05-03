@@ -23,9 +23,27 @@ namespace ZGenesis.Configuration {
             using(FileStream fs = new FileStream(Path, FileMode.OpenOrCreate, FileAccess.Read)) {
                 using(StreamReader sr = new StreamReader(fs)) {
                     string line;
+                    bool multilineComment = false;
+                    bool multilineJustSet = false;
                     while((line = sr.ReadLine()) != null) {
+                        if(multilineJustSet) multilineJustSet = false;
+
+                        int multilineStartIdx = line.IndexOf("/*");
+                        int multilineEndIdx = line.IndexOf("*/");
+
+                        if(multilineStartIdx != -1) {
+                            multilineComment = true;
+                            multilineJustSet = true;
+                            line = line.Substring(0, multilineStartIdx);
+                        } else if(multilineEndIdx != -1) {
+                            multilineComment = false;
+                            line = line.Substring(multilineEndIdx);
+                        }
+
+                        if(multilineComment && !multilineJustSet) continue;
                         line = line.Substring(0, line.IndexOf("//"));
                         if(line.Trim() == "") continue;
+
                         string type = null;
                         string key = null;
                         foreach(string part in line.Trim().Split(' ')) {
@@ -38,6 +56,7 @@ namespace ZGenesis.Configuration {
                         }
                         int valueStart = line.IndexOf("=");
                         string value = line.Substring(valueStart).Trim();
+
                         EConfigValueType t = EConfigValueType.COUNT;
                         foreach(string valueType in CONFIG_VALUE_TYPES) {
                             if(type == valueType.ToLower()) {
@@ -48,9 +67,10 @@ namespace ZGenesis.Configuration {
                         if(t != EConfigValueType.COUNT) {
 
                         } else {
-                            Logger.Log(Logger.LogLevel.ERROR, "ZGenesis", "Invalid type '{0}' for configuration key '{1}' in file '{2}'", type, );
+                            Logger.Log(Logger.LogLevel.ERROR, "ZGenesis", "Invalid type '{0}' for configuration key '{1}' in file '{2}'", type, key, Path);
                         }
                     }
+                }
             }
         }
     }
