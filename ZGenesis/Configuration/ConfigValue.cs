@@ -71,7 +71,7 @@ namespace ZGenesis.Configuration {
             if(type.IsAssignableFrom(newValue.GetType()))
                 value = newValue;
             else
-                Logger.Log(Logger.LogLevel.ERROR, "ZGenesis", "CONFIG ERROR: Invalid value ({0}) attempted assignment to config value with type '{1}'.", newValue, type);
+                Logger.Log(Logger.LogLevel.ERROR, modName, "CONFIG ERROR: Invalid value ({0}) attempted assignment to config value with type '{1}'.", newValue, type);
         }
         private static object ParseStringValue(string modName, string value, Type type) {
             TypeConverter typeConverter = TypeDescriptor.GetConverter(type);

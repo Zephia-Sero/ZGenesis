@@ -24,7 +24,14 @@ namespace ZGenesis.Configuration {
             ownerName = owner.Name;
             header = new ConfigHeader(ownerName, Path);
         }
-        public void ForceLoadFile() {
+        public bool TryLoadConfig() {
+            foreach(string loadFirst in header.loadAfter) {
+                if(!loaded.Contains(loadFirst)) return false;
+            }
+            ForceLoadConfig();
+            return true;
+        }
+        public void ForceLoadConfig() {
             try {
                 using(FileStream fs = new FileStream(Path, FileMode.OpenOrCreate, FileAccess.Read)) {
                     using(StreamReader sr = new StreamReader(fs)) {
@@ -108,6 +115,7 @@ namespace ZGenesis.Configuration {
             } catch(Exception e) {
                 Logger.Log(Logger.LogLevel.ERROR, ownerName, "CONFIG ERROR: Could not open config file '{0}'. Exception: {1}", Path, e);
             }
+            loaded.Add(Path);
         }
     }
 }
