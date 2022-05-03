@@ -14,6 +14,8 @@ namespace ZGenesis.Mod {
             // Verify that mod hasn't already been loaded.
             if(Patcher.loadedMods.All(mod => { return mod.ModNamespace != ModNamespace; })) {
                 Patcher.loadedMods.Add(this);
+            } else {
+                Logger.Log(Logger.LogLevel.WARNING, Name, "Mod already loaded!");
             }
         }
         public abstract void PostPatches();
