@@ -95,7 +95,8 @@ namespace ZGenesis.Configuration {
                         if(t != EConfigValueType.COUNT) {
                             ConfigValue val = ConfigValue.TryCreateFromString(ownerName, value, t);
 
-                            if(key.StartsWith("config.")) {
+                            if(key.StartsWith("__config__.")) {
+                                key = key.Substring(key.IndexOf('.'));
                                 if(overriding) fileOptions[key] = val;
                                 else fileOptions.Add(key, val);
                             } else {
