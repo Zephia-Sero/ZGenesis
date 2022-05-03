@@ -31,8 +31,26 @@ namespace ZGenesis.Mod {
         }
         public void LoadConfig() {
             config.ForEach(cfgfile => {
-                new ConfigFile(this, cfgfile);
+                if(defaults.ContainsKey(cfgfile))
+                    new ConfigFile(this, cfgfile, defaults[cfgfile]);
+                else
+                    new ConfigFile(this, cfgfile);
             });
+        }
+        protected void AddDefaultConfig(string filename, string key, ConfigValue value) {
+            if(!config.Contains(filename)) Logger.Log(Logger.LogLevel.WARNING, Name, "Cannot add default config setting '{1} = {2}' for unloaded file '{0}'.", filename, key, value);
+            else {
+                if(!defaults.ContainsKey(filename)) defaults.Add(filename, new Dictionary<string, ConfigValue>());
+                defaults[filename].Add(key, value);
+            }
+        }
+        protected void AddDefaultConfig(int fileIndex, string key, ConfigValue value) {
+            if(fileIndex >= config.Count) Logger.Log(Logger.LogLevel.WARNING, Name, "Cannot add default config setting '{1} = {2}'. Index {0} exceeds # of loaded config files.", fileIndex, key, value);
+            else {
+                string filename = config[fileIndex];
+                if(!defaults.ContainsKey(filename)) defaults.Add(filename, new Dictionary<string, ConfigValue>());
+                defaults[filename].Add(key, value);
+            }
         }
 
         // Derive these!
@@ -48,5 +66,6 @@ namespace ZGenesis.Mod {
 
         protected List<DependentPatcher> patchers = new List<DependentPatcher>();
         protected List<string> config = new List<string>();
+        protected Dictionary<string, Dictionary<string, ConfigValue>> defaults = new Dictionary<string, Dictionary<string, ConfigValue>>();
     }
 }

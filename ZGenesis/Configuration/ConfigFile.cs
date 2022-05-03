@@ -17,10 +17,11 @@ namespace ZGenesis.Configuration {
         private readonly string ownerName;
         internal delegate bool OnLoad();
         internal OnLoad onLoad;
+        private readonly Dictionary<string, ConfigValue> defaults;
         static ConfigFile() {
             CONFIG_VALUE_TYPES = Enum.GetNames(typeof(EConfigValueType));
         }
-        public ConfigFile(GenesisMod owner, string path) {
+        public ConfigFile(GenesisMod owner, string path, Dictionary<string, ConfigValue> defaults) {
             Path = "config/" + path;
             int dirpathLen = Path.LastIndexOf('/');
             if(dirpathLen == -1)
@@ -33,9 +34,11 @@ namespace ZGenesis.Configuration {
             }
             ownerName = owner.Name;
             header = new ConfigHeader(ownerName, Path);
-            onLoad = new OnLoad(()=>{ return true; });
+            onLoad = new OnLoad(() => { return true; });
             unloadedConfigFiles.Add(this);
+            this.defaults = defaults;
         }
+        public ConfigFile(GenesisMod owner, string path) : this(owner, path, new Dictionary<string, ConfigValue>()) { }
         public void PreloadPrep() {
             foreach(string loadFirst in header.loadAfter) {
                 unloadedConfigFiles.ForEach(cfg => {
@@ -66,8 +69,6 @@ namespace ZGenesis.Configuration {
                         while((line = sr.ReadLine()) != null) {
                             lineNum++;
                             if(multilineJustSet) multilineJustSet = false;
-                            bool overriding = line.StartsWith("!");
-                            if(overriding) line = line.Substring(1);
                             int multilineStartIdx = line.IndexOf("/*");
                             int multilineEndIdx = line.IndexOf("*/");
 
@@ -99,21 +100,28 @@ namespace ZGenesis.Configuration {
 
                             bool successfulSplit = true;
                             if(type == null) {
-                                Logger.Log(Logger.LogLevel.ERROR, ownerName, "CONFIG ERROR: Line {0}: Could not find type for config entry in file '{1}'.", lineNum, Path);
+                                if(key != null)
+                                    Logger.Log(Logger.LogLevel.ERROR, ownerName, "CONFIG ERROR: Line {0}: Could not find type for config entry with key '{2}' in file '{1}'.", lineNum, Path, key);
+                                else
+                                    Logger.Log(Logger.LogLevel.ERROR, ownerName, "CONFIG ERROR: Line {0}: Could not find type for config entry in file '{1}'.", lineNum, Path);
                                 successfulSplit = false;
                             }
                             if(key == null) {
                                 Logger.Log(Logger.LogLevel.ERROR, ownerName, "CONFIG ERROR: Line {0}: Could not find key for config entry in file '{1}'.", lineNum, Path);
                                 successfulSplit = false;
-                            } else if(options.ContainsKey(key) && !overriding) {
-                                Logger.Log(Logger.LogLevel.ERROR, ownerName, "CONFIG ERROR: Line {0}: Duplicate configuration key in file '{1}'", lineNum, Path);
+                            } else if(options.ContainsKey(key)) {
+                                Logger.Log(Logger.LogLevel.ERROR, ownerName, "CONFIG ERROR: Line {0}: Duplicate configuration key '{2}' in file '{1}'", lineNum, Path, key);
+                                successfulSplit = false;
                             }
                             string value = "";
                             if(valueStart != -1) {
                                 value = line.Substring(valueStart).Trim();
                             }
                             if(value == "") {
-                                Logger.Log(Logger.LogLevel.ERROR, ownerName, "CONFIG ERROR: Line {0}: Could not find value for config entry in file '{1}'.", lineNum, Path);
+                                if(key != null)
+                                    Logger.Log(Logger.LogLevel.ERROR, ownerName, "CONFIG ERROR: Line {0}: Could not find value for config entry with key '{2}' in file '{1}'.", lineNum, Path, key);
+                                else
+                                    Logger.Log(Logger.LogLevel.ERROR, ownerName, "CONFIG ERROR: Line {0}: Could not find value for config entry in file '{1}'.", lineNum, Path);
                                 successfulSplit = false;
                             }
                             if(!successfulSplit) continue;
@@ -127,8 +135,7 @@ namespace ZGenesis.Configuration {
                             }
                             if(t != EConfigValueType.COUNT) {
                                 ConfigValue val = ConfigValue.TryCreateFromString(ownerName, value, t);
-                                if(overriding) options[key] = val;
-                                else options.Add(key, val);
+                                options.Add(key, val);
                             } else {
                                 Logger.Log(Logger.LogLevel.ERROR, ownerName, "CONFIG ERROR: Line {0}: Invalid type '{1}' for configuration key '{2}' in file '{3}'.", lineNum, type, key, Path);
                             }
@@ -137,6 +144,9 @@ namespace ZGenesis.Configuration {
                 }
             } catch(Exception e) {
                 Logger.Log(Logger.LogLevel.ERROR, ownerName, "CONFIG ERROR: Could not open config file '{0}'. Exception: {1}", Path, e);
+            }
+            foreach(KeyValuePair<string, ConfigValue> keyValuePair in defaults) {
+                if(
             }
             unloadedConfigFiles.Remove(this);
             onLoad();

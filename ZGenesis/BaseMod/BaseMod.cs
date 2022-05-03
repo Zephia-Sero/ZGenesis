@@ -15,6 +15,7 @@ namespace ZGenesis.BaseMod {
         public BaseMod() { }
         public override void PreConfig() {
             config.Add("ZGenesis.zcfg");
+            AddDefaultConfig("ZGenesis.zcfg", "com.zgenesis.debug_mode", new ConfigValue(Name, false, EConfigValueType.Bool));
         }
         public override void PostConfig() {
             // Should call ConfigFile.GetValue("com.zgenesis.debug_mode"); and stuff -- todo
