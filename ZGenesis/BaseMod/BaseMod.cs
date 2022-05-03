@@ -18,7 +18,7 @@ namespace ZGenesis.BaseMod {
             AddDefaultConfig("ZGenesis.zcfg", "com.zgenesis.debug_mode", new ConfigValue(Name, false, EConfigValueType.Bool));
         }
         public override void PostConfig() {
-            // Should call ConfigFile.GetValue("com.zgenesis.debug_mode"); and stuff -- todo
+            debugModeEnabled = ConfigFile.loadedConfigFiles["ZGenesis.zcfg"]["com.zgenesis.debug_mode"].GetValue<bool>();
         }
         public override void PrePatch() {
             patchers.Add(new DependentPatcher(this, "event.network", typeof(NetworkPatches)));
