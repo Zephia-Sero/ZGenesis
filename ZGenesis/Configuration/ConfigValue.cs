@@ -60,6 +60,7 @@ namespace ZGenesis.Configuration {
         }
         public ConfigValue(string modName, object value, EConfigValueType type) {
             valueType = TypeConvert(modName, type);
+            this.type = type;
             SetValue(modName, value);
         }
         private ConfigValue(string modName, object value, Type vType, EConfigValueType type) {

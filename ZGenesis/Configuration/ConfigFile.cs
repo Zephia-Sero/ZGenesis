@@ -52,13 +52,16 @@ namespace ZGenesis.Configuration {
                                 multilineComment = true;
                                 multilineJustSet = true;
                                 line = line.Substring(0, multilineStartIdx);
-                            } else if(multilineEndIdx != -1) {
+                            }
+                            if(multilineEndIdx != -1) {
                                 multilineComment = false;
                                 line = line.Substring(multilineEndIdx);
                             }
-
+                            
                             if(multilineComment && !multilineJustSet) continue;
-                            line = line.Substring(0, line.IndexOf("//"));
+                            
+                            int commentIdx = line.IndexOf("//");
+                            if(commentIdx != -1) line = line.Substring(0, commentIdx);
                             if(line.Trim() == "") continue;
 
                             string type = null;
@@ -91,7 +94,7 @@ namespace ZGenesis.Configuration {
                             }
                             string value = "";
                             if(valueStart != -1) {
-                                value = line.Substring(valueStart).Trim();
+                                value = line.Substring(valueStart+1).Trim();
                             }
                             if(value == "") {
                                 if(key != null)
@@ -111,7 +114,7 @@ namespace ZGenesis.Configuration {
                             }
                             if(t != EConfigValueType.COUNT) {
                                 ConfigValue val = ConfigValue.TryCreateFromString(ownerName, value, t);
-                                this[key] = val;
+                                options[key] = val;
                             } else {
                                 Logger.Log(Logger.LogLevel.ERROR, ownerName, "CONFIG ERROR: Line {0}: Invalid type '{1}' for configuration key '{2}' in file '{3}'.", lineNum, type, key, Path);
                             }
@@ -121,9 +124,7 @@ namespace ZGenesis.Configuration {
             } catch(Exception e) {
                 Logger.Log(Logger.LogLevel.ERROR, ownerName, "CONFIG ERROR: Could not open config file '{0}'. Exception: {1}", Path, e);
             }
-            Logger.Log("test", "1");
             foreach(string key in defaults.Keys) {
-                Logger.Log("test", key);
                 if(!options.ContainsKey(key)) {
                     this[key] = defaults[key];
                 }

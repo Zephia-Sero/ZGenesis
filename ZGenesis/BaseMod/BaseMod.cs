@@ -15,10 +15,12 @@ namespace ZGenesis.BaseMod {
         public BaseMod() { }
         public override void PreConfig() {
             config.Add("ZGenesis.zcfg");
-            AddDefaultConfig("ZGenesis.zcfg", "com.zgenesis.debug_mode", new ConfigValue(Name, false, EConfigValueType.Bool));
+            AddDefaultConfig("ZGenesis.zcfg", "com.zgenesis.debug_mode", new ConfigValue(Name, debugModeEnabled, EConfigValueType.Bool));
+            AddDefaultConfig("ZGenesis.zcfg", "com.zgenesis.log_level", new ConfigValue(Name, (byte) logLevel, EConfigValueType.U8));
         }
         public override void PostConfig() {
             debugModeEnabled = ConfigFile.loadedConfigFiles["ZGenesis.zcfg"]["com.zgenesis.debug_mode"].GetValue<bool>();
+            logLevel = (Logger.LogLevel) ConfigFile.loadedConfigFiles["ZGenesis.zcfg"]["com.zgenesis.log_level"].GetValue<byte>();
         }
         public override void PrePatch() {
             patchers.Add(new DependentPatcher(this, "event.network", typeof(NetworkPatches)));
