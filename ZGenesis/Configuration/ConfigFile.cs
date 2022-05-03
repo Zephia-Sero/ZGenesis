@@ -30,14 +30,11 @@ namespace ZGenesis.Configuration {
             onLoad = new OnLoad(()=>{});
             unloadedConfigFiles.Add(this);
         }
-        internal void AddDependent(ConfigFile other) {
-            onLoad += other.TryLoadConfig;
-        }
         public void PreloadPrep() {
             foreach(string loadFirst in header.loadAfter) {
                 unloadedConfigFiles.ForEach(cfg => {
                     if(cfg.Path == loadFirst) {
-                        cfg.onLoad += this.TryLoadConfig;
+                        cfg.onLoad += TryLoadConfig;
                     }
                 });
             }
