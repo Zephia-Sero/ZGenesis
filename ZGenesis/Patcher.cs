@@ -65,7 +65,9 @@ namespace ZGenesis {
             Logger.Log(Logger.LogLevel.ESSENTIAL, "ZGenesis", "Stage: PreConfig");
             loadedMods.ForEach(mod => { mod.PreConfig(); });
             Logger.Log(Logger.LogLevel.ESSENTIAL, "ZGenesis", "Loading mod configs");
-            // TODO
+            loadedMods.ForEach(mod => {
+                mod.LoadConfig();
+            });
             Logger.Log(Logger.LogLevel.ESSENTIAL, "ZGenesis", "Stage: PostConfig");
             loadedMods.ForEach(mod => { mod.PostConfig(); });
         }

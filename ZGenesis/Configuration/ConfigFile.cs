@@ -22,6 +22,9 @@ namespace ZGenesis.Configuration {
         }
         public ConfigFile(GenesisMod owner, string path) {
             Path = path;
+            if(!File.Exists(path)) {
+                File.Create(path).Close();
+            }
             ownerName = owner.Name;
             header = new ConfigHeader(ownerName, Path);
             onLoad = new OnLoad(()=>{});

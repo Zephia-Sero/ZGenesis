@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using ZGenesis.Configuration;
 
 namespace ZGenesis.Mod {
     public abstract class GenesisMod {
@@ -27,6 +28,11 @@ namespace ZGenesis.Mod {
                 missingDependencies.AddRange(patcher.DependenciesUnavailable());
             });
             return missingDependencies;
+        }
+        public void LoadConfig() {
+            config.ForEach(cfgfile => {
+                new ConfigFile(this, cfgfile);
+            });
         }
 
         // Derive these!
