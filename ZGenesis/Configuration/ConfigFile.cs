@@ -10,12 +10,13 @@ namespace ZGenesis.Configuration {
     public class ConfigFile {
         public static readonly string[] CONFIG_VALUE_TYPES;
         public static Dictionary<string, ConfigValue> options = new Dictionary<string, ConfigValue>();
-        public static List<string> loaded = new List<string>();
+        public static List<string> configFiles = new List<string>();
 
         public string Path { get; }
         public readonly ConfigHeader header;
         private readonly string ownerName;
-
+        internal delegate void OnLoad();
+        internal OnLoad onLoad;
         static ConfigFile() {
             CONFIG_VALUE_TYPES = Enum.GetNames(typeof(EConfigValueType));
         }
@@ -23,13 +24,17 @@ namespace ZGenesis.Configuration {
             Path = path;
             ownerName = owner.Name;
             header = new ConfigHeader(ownerName, Path);
+            onLoad = new OnLoad(()=>{});
+            configFiles.Add(path);
         }
-        public bool TryLoadConfig() {
+        internal void AddDependent(ConfigFile other) {
+            onLoad += other.TryLoadConfig;
+        }
+        public void TryLoadConfig() {
             foreach(string loadFirst in header.loadAfter) {
-                if(!loaded.Contains(loadFirst)) return false;
+                if(configFiles.Contains(loadFirst)) return;
             }
             ForceLoadConfig();
-            return true;
         }
         public void ForceLoadConfig() {
             try {
@@ -115,7 +120,8 @@ namespace ZGenesis.Configuration {
             } catch(Exception e) {
                 Logger.Log(Logger.LogLevel.ERROR, ownerName, "CONFIG ERROR: Could not open config file '{0}'. Exception: {1}", Path, e);
             }
-            loaded.Add(Path);
+            configFiles.Remove(Path);
+            onLoad();
         }
     }
 }
