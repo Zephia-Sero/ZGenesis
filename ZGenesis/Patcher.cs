@@ -21,7 +21,14 @@ namespace ZGenesis {
 
         static Patcher() {
             Logger.Log(Logger.LogLevel.ESSENTIAL, "ZGenesis", "Patcher successfully instantiated.");
-            
+            if(!Directory.Exists("./mods")) {
+                Logger.Log(Logger.LogLevel.ESSENTIAL, "ZGenesis", "Creating mods directory.");
+                Directory.CreateDirectory("./mods");
+            }
+            if(!Directory.Exists("./logs")) {
+                Logger.Log(Logger.LogLevel.ESSENTIAL, "ZGenesis", "Creating logs directory.");
+                Directory.CreateDirectory("./logs");
+            }
             LoadMods();
             ConfigureMods();
             if(BaseMod.BaseMod.debugModeEnabled) {

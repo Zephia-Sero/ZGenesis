@@ -1,4 +1,4 @@
-﻿0a1,31
+﻿0a1,25
 > using System;
 > using System.IO;
 > using System.Reflection;
@@ -8,12 +8,6 @@
 > public class InternalPatcher {
 > 	public static void Patch() {
 > 		if(!InternalPatcher.modLoaderStarted) {
-> 			if(!Directory.Exists("./mods")) {
-> 				Directory.CreateDirectory("./mods");
-> 			}
-> 			if(!Directory.Exists("./logs")) {
-> 				Directory.CreateDirectory("./logs");
-> 			}
 > 			using(FileStream fileStream = File.Open("./logs/zgenesis_internal_init.log", FileMode.Create)) {
 > 				using(StreamWriter streamWriter = new StreamWriter(fileStream)) {
 > 					try {
