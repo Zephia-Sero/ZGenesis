@@ -92,7 +92,10 @@ namespace ZGenesis.Configuration {
                             }
                         }
                         if(t != EConfigValueType.COUNT) {
-
+                            ConfigValue val = ConfigValue.TryCreateFromString(value, t);
+                            if(key.StartsWith("config.")) {
+                                fileOptions.Add(key, val);
+                            }
                         } else {
                             Logger.Log(Logger.LogLevel.ERROR, owner.Name, "CONFIG ERROR: Line {0}: Invalid type '{1}' for configuration key '{2}' in file '{3}'.", lineNum, type, key, Path);
                         }

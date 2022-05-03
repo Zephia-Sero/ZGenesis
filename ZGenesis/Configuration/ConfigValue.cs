@@ -46,8 +46,20 @@ namespace ZGenesis.Configuration {
                 return null;
             }
         }
+        public static ConfigValue TryCreateFromString(string value, EConfigValueType type) {
+            Type t = TypeConvert(type);
+            object val = ParseStringValue(value, t);
+            if(val == null) {
+                Logger.Log(Logger.LogLevel.ERROR, "ZGenesis", "CONFIG ERROR: Invalid value string (\"{0}\") attempted assignment to invalid type '{1}'.", value, type);
+            }
+            return new ConfigValue(val, t);
+        }
         public ConfigValue(object value, EConfigValueType type) {
             this.type = TypeConvert(type);
+            SetValue(value);
+        }
+        private ConfigValue(object value, Type type) {
+            this.type = type;
             SetValue(value);
         }
         public object GetValueRaw() {
@@ -58,6 +70,9 @@ namespace ZGenesis.Configuration {
                 value = newValue;
             else
                 Logger.Log(Logger.LogLevel.ERROR, "ZGenesis", "CONFIG ERROR: Invalid value ({0}) attempted assignment to config value with type '{1}'.", newValue, type);
+        }
+        private static object ParseStringValue(string value, Type type) {
+            return value; // TODO
         }
         public T GetValue<T>() {
             if(typeof(T).IsAssignableFrom(type)) return (T) value;
