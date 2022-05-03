@@ -24,7 +24,7 @@ namespace ZGenesis {
             Log(LogLevel.INFO, modname, message, args);
         }
         public static void Log(LogLevel level, string modname, string message, params object[] args) {
-            if(level < Patcher.logLevel) return;
+            if(level < BaseMod.BaseMod.logLevel) return;
             string time = DateTime.Now.ToString("HH:mm:ss+fff");
             logSW.WriteLine(
                 $"{time} <{level}> " + new string(' ',9-level.ToString().Length) + $"[{modname}] {string.Format(message,args)}"

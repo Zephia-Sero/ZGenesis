@@ -8,7 +8,16 @@ namespace ZGenesis.BaseMod {
         public override string ModNamespace => "com.zgenesis";
         public override string Description => "Base ZGenesis mod, including many event hooks for other mods to use.";
         public override string Version => "v0.1.0";
+        internal static int MAX_PATCH_ATTEMPTS = 500;
+        internal static Logger.LogLevel logLevel = Logger.LogLevel.INFO;
+        internal static bool debugModeEnabled = false;
         public BaseMod() { }
+        public override void PreConfig() {
+            config.Add("config/ZGenesis.zcfg");
+        }
+        public override void PostConfig() {
+            // Should call ConfigFile.GetValue("com.zgenesis.debug_mode"); and stuff -- todo
+        }
         public override void PrePatch() {
             patchers.Add(new DependentPatcher(this, "event.network", typeof(NetworkPatches)));
             //patchers[0].AddDependency("com.example.dependency");

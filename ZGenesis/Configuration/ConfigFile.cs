@@ -15,19 +15,25 @@ namespace ZGenesis.Configuration {
         public string Path { get; }
         public readonly ConfigHeader header;
         private readonly string ownerName;
-        internal delegate void OnLoad();
+        internal delegate bool OnLoad();
         internal OnLoad onLoad;
         static ConfigFile() {
             CONFIG_VALUE_TYPES = Enum.GetNames(typeof(EConfigValueType));
         }
         public ConfigFile(GenesisMod owner, string path) {
             Path = path;
+            int dirpathLen = path.LastIndexOf('/');
+            if(dirpathLen == -1)
+                dirpathLen = path.LastIndexOf('\\');
+            string dirpath = path.Substring(0, dirpathLen);
+            if(dirpathLen != -1 && !Directory.Exists(dirpath))
+                Directory.CreateDirectory(dirpath);
             if(!File.Exists(path)) {
                 File.Create(path).Close();
             }
             ownerName = owner.Name;
             header = new ConfigHeader(ownerName, Path);
-            onLoad = new OnLoad(()=>{});
+            onLoad = new OnLoad(()=>{ return true; });
             unloadedConfigFiles.Add(this);
         }
         public void PreloadPrep() {
@@ -39,13 +45,14 @@ namespace ZGenesis.Configuration {
                 });
             }
         }
-        public void TryLoadConfig() {
+        public bool TryLoadConfig() {
             foreach(string loadFirst in header.loadAfter) {
                 if(unloadedConfigFiles.Any(cfg => {
                     return cfg.Path == loadFirst;
-                })) return;
+                })) return false;
             }
             ForceLoadConfig();
+            return true;
         }
         public void ForceLoadConfig() {
             try {
