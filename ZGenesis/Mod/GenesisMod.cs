@@ -3,13 +3,7 @@ using System.Linq;
 
 namespace ZGenesis.Mod {
     public abstract class GenesisMod {
-        public abstract string Name { get; }
-        public abstract string ModNamespace { get; }
-        public abstract string Description { get; }
-        public abstract string Version { get; }
-        protected List<DependentPatcher> patchers = new List<DependentPatcher>();
         public bool PatchingFinished { get; private set; }
-
         public GenesisMod() {
             // Verify that mod hasn't already been loaded.
             if(Patcher.loadedMods.All(mod => { return mod.ModNamespace != ModNamespace; })) {
@@ -18,21 +12,35 @@ namespace ZGenesis.Mod {
                 Logger.Log(Logger.LogLevel.WARNING, Name, "Mod already loaded!");
             }
         }
-        public abstract void PostPatches();
-        public virtual bool TryPatch() {
+
+        public bool TryPatch() {
             if(PatchingFinished) return true;
             PatchingFinished = true;
             patchers.ForEach(patcher => {
-                PatchingFinished &= patcher.TryPatch(); 
+                PatchingFinished &= patcher.TryPatch();
             });
             return PatchingFinished;
         }
-        public virtual List<string> DependenciesUnavailable() {
+        public List<string> DependenciesUnavailable() {
             List<string> missingDependencies = new List<string>();
             patchers.ForEach(patcher => {
                 missingDependencies.AddRange(patcher.DependenciesUnavailable());
             });
             return missingDependencies;
         }
+
+        // Derive these!
+
+        public abstract string Name { get; }
+        public abstract string ModNamespace { get; }
+        public abstract string Description { get; }
+        public abstract string Version { get; }
+        public virtual void PreConfig() { }
+        public virtual void PostConfig() { }
+        public virtual void PrePatch() { }
+        public virtual void PostPatch() { }
+
+        protected List<DependentPatcher> patchers = new List<DependentPatcher>();
+        protected List<string> config = new List<string>();
     }
 }

@@ -8,7 +8,8 @@ namespace ZGenesis.BaseMod {
         public override string ModNamespace => "com.zgenesis";
         public override string Description => "Base ZGenesis mod, including many event hooks for other mods to use.";
         public override string Version => "v0.1.0";
-        public BaseMod() {
+        public BaseMod() { }
+        public override void PrePatch() {
             patchers.Add(new DependentPatcher(this, "event.network", typeof(NetworkPatches)));
             //patchers[0].AddDependency("com.example.dependency");
             patchers.Add(new DependentPatcher(this, "event.sylladex", typeof(SylladexPatches)));
@@ -20,6 +21,5 @@ namespace ZGenesis.BaseMod {
                 patcher.AddDependency("com.prebasemod.*");
             });
         }
-        public override void PostPatches() { }
     }
 }
