@@ -34,6 +34,7 @@ namespace ZGenesis.Configuration {
         }
         public ConfigFile(GenesisMod owner, string path) : this(owner, path, new Dictionary<string, ConfigValue>()) { }
         public void LoadConfig() {
+            int lineNum = 0;
             try {
                 using(FileStream fs = new FileStream(Path, FileMode.OpenOrCreate, FileAccess.Read)) {
                     using(StreamReader sr = new StreamReader(fs)) {
@@ -41,7 +42,6 @@ namespace ZGenesis.Configuration {
                         bool multilineComment = false;
                         bool multilineJustSet = false;
 
-                        int lineNum = 0;
                         while((line = sr.ReadLine()) != null) {
                             lineNum++;
                             if(multilineJustSet) multilineJustSet = false;
@@ -122,7 +122,11 @@ namespace ZGenesis.Configuration {
                     }
                 }
             } catch(Exception e) {
-                Logger.Log(Logger.LogLevel.ERROR, ownerName, "CONFIG ERROR: Could not open config file '{0}'. Exception: {1}", Path, e);
+                if(lineNum == 0) {
+                    Logger.Log(Logger.LogLevel.ERROR, ownerName, "CONFIG ERROR: Could not open config file '{0}'. Exception: {1}", Path, e);
+                } else {
+                    Logger.Log(Logger.LogLevel.ERROR, ownerName, "CONFIG ERROR: Could not open config file '{0}'. Line number when exception was triggered: {2}. Exception: {1}", Path, e, lineNum);
+                }
             }
             foreach(string key in defaults.Keys) {
                 if(!options.ContainsKey(key)) {
