@@ -1,5 +1,6 @@
 ﻿using ZGenesis.Attributes;
 using ZGenesis.Mod;
+using ZGenesis.Configuration;
 
 namespace ZGenesis.BaseMod {
     [GenesisMod]
@@ -13,7 +14,7 @@ namespace ZGenesis.BaseMod {
         internal static bool debugModeEnabled = false;
         public BaseMod() { }
         public override void PreConfig() {
-            config.Add("config/ZGenesis.zcfg");
+            config.Add("ZGenesis.zcfg");
         }
         public override void PostConfig() {
             // Should call ConfigFile.GetValue("com.zgenesis.debug_mode"); and stuff -- todo

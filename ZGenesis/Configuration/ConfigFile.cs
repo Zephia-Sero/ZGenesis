@@ -21,15 +21,15 @@ namespace ZGenesis.Configuration {
             CONFIG_VALUE_TYPES = Enum.GetNames(typeof(EConfigValueType));
         }
         public ConfigFile(GenesisMod owner, string path) {
-            Path = path;
-            int dirpathLen = path.LastIndexOf('/');
+            Path = "config/" + path;
+            int dirpathLen = Path.LastIndexOf('/');
             if(dirpathLen == -1)
-                dirpathLen = path.LastIndexOf('\\');
-            string dirpath = path.Substring(0, dirpathLen);
+                dirpathLen = Path.LastIndexOf('\\');
+            string dirpath = Path.Substring(0, dirpathLen);
             if(dirpathLen != -1 && !Directory.Exists(dirpath))
                 Directory.CreateDirectory(dirpath);
-            if(!File.Exists(path)) {
-                File.Create(path).Close();
+            if(!File.Exists(Path)) {
+                File.Create(Path).Close();
             }
             ownerName = owner.Name;
             header = new ConfigHeader(ownerName, Path);
