@@ -10,7 +10,8 @@ namespace ZGenesis.Configuration {
     public class ConfigFile {
         public static readonly string[] CONFIG_VALUE_TYPES;
         public string Path { get; }
-        public Dictionary<string, ConfigValue> options = new Dictionary<string, ConfigValue>();
+        public static Dictionary<string, ConfigValue> options = new Dictionary<string, ConfigValue>();
+        public Dictionary<string, ConfigValue> fileOptions = new Dictionary<string, ConfigValue>();
         private readonly GenesisMod owner;
         
         static ConfigFile() {
