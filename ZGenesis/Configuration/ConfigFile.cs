@@ -8,46 +8,32 @@ using ZGenesis.Mod;
 
 namespace ZGenesis.Configuration {
     public class ConfigFile {
-        public static readonly string[] CONFIG_VALUE_TYPES;
-        public static Dictionary<string, ConfigValue> options = new Dictionary<string, ConfigValue>();
-        public static List<ConfigFile> unloadedConfigFiles = new List<ConfigFile>();
+        public static readonly string[] CONFIG_VALUE_TYPES = Enum.GetNames(typeof(EConfigValueType));
+        public static Dictionary<string, ConfigFile> loadedConfigFiles = new Dictionary<string, ConfigFile>();
 
+        public Dictionary<string, ConfigValue> options = new Dictionary<string, ConfigValue>();
         public string Path { get; }
-        public readonly ConfigHeader header;
         private readonly string ownerName;
-        internal delegate void OnLoad();
-        internal OnLoad onLoad;
+        private readonly Dictionary<string, ConfigValue> defaults;
         static ConfigFile() {
             CONFIG_VALUE_TYPES = Enum.GetNames(typeof(EConfigValueType));
         }
-        public ConfigFile(GenesisMod owner, string path) {
-            Path = path;
+        public ConfigFile(GenesisMod owner, string path, Dictionary<string, ConfigValue> defaults) {
+            Path = "config/" + path;
+            int dirpathLen = Path.LastIndexOf('/');
+            if(dirpathLen == -1)
+                dirpathLen = Path.LastIndexOf('\\');
+            string dirpath = Path.Substring(0, dirpathLen);
+            if(dirpathLen != -1 && !Directory.Exists(dirpath))
+                Directory.CreateDirectory(dirpath);
+            if(!File.Exists(Path)) {
+                File.Create(Path).Close();
+            }
             ownerName = owner.Name;
-            header = new ConfigHeader(ownerName, Path);
-            onLoad = new OnLoad(()=>{});
-            unloadedConfigFiles.Add(this);
+            this.defaults = defaults;
         }
-        internal void AddDependent(ConfigFile other) {
-            onLoad += other.TryLoadConfig;
-        }
-        public void PreloadPrep() {
-            foreach(string loadFirst in header.loadAfter) {
-                unloadedConfigFiles.ForEach(cfg => {
-                    if(cfg.Path == loadFirst) {
-                        cfg.onLoad += this.TryLoadConfig;
-                    }
-                });
-            }
-        }
-        public void TryLoadConfig() {
-            foreach(string loadFirst in header.loadAfter) {
-                if(unloadedConfigFiles.Any(cfg => {
-                    return cfg.Path == loadFirst;
-                })) return;
-            }
-            ForceLoadConfig();
-        }
-        public void ForceLoadConfig() {
+        public ConfigFile(GenesisMod owner, string path) : this(owner, path, new Dictionary<string, ConfigValue>()) { }
+        public void LoadConfig() {
             try {
                 using(FileStream fs = new FileStream(Path, FileMode.OpenOrCreate, FileAccess.Read)) {
                     using(StreamReader sr = new StreamReader(fs)) {
@@ -59,8 +45,6 @@ namespace ZGenesis.Configuration {
                         while((line = sr.ReadLine()) != null) {
                             lineNum++;
                             if(multilineJustSet) multilineJustSet = false;
-                            bool overriding = line.StartsWith("!");
-                            if(overriding) line = line.Substring(1);
                             int multilineStartIdx = line.IndexOf("/*");
                             int multilineEndIdx = line.IndexOf("*/");
 
@@ -68,13 +52,16 @@ namespace ZGenesis.Configuration {
                                 multilineComment = true;
                                 multilineJustSet = true;
                                 line = line.Substring(0, multilineStartIdx);
-                            } else if(multilineEndIdx != -1) {
+                            }
+                            if(multilineEndIdx != -1) {
                                 multilineComment = false;
                                 line = line.Substring(multilineEndIdx);
                             }
-
+                            
                             if(multilineComment && !multilineJustSet) continue;
-                            line = line.Substring(0, line.IndexOf("//"));
+                            
+                            int commentIdx = line.IndexOf("//");
+                            if(commentIdx != -1) line = line.Substring(0, commentIdx);
                             if(line.Trim() == "") continue;
 
                             string type = null;
@@ -92,21 +79,28 @@ namespace ZGenesis.Configuration {
 
                             bool successfulSplit = true;
                             if(type == null) {
-                                Logger.Log(Logger.LogLevel.ERROR, ownerName, "CONFIG ERROR: Line {0}: Could not find type for config entry in file '{1}'.", lineNum, Path);
+                                if(key != null)
+                                    Logger.Log(Logger.LogLevel.ERROR, ownerName, "CONFIG ERROR: Line {0}: Could not find type for config entry with key '{2}' in file '{1}'.", lineNum, Path, key);
+                                else
+                                    Logger.Log(Logger.LogLevel.ERROR, ownerName, "CONFIG ERROR: Line {0}: Could not find type for config entry in file '{1}'.", lineNum, Path);
                                 successfulSplit = false;
                             }
                             if(key == null) {
                                 Logger.Log(Logger.LogLevel.ERROR, ownerName, "CONFIG ERROR: Line {0}: Could not find key for config entry in file '{1}'.", lineNum, Path);
                                 successfulSplit = false;
-                            } else if(options.ContainsKey(key) && !overriding) {
-                                Logger.Log(Logger.LogLevel.ERROR, ownerName, "CONFIG ERROR: Line {0}: Duplicate configuration key in file '{1}'", lineNum, Path);
+                            } else if(options.ContainsKey(key)) {
+                                Logger.Log(Logger.LogLevel.ERROR, ownerName, "CONFIG ERROR: Line {0}: Duplicate configuration key '{2}' in file '{1}'", lineNum, Path, key);
+                                successfulSplit = false;
                             }
                             string value = "";
                             if(valueStart != -1) {
-                                value = line.Substring(valueStart).Trim();
+                                value = line.Substring(valueStart+1).Trim();
                             }
                             if(value == "") {
-                                Logger.Log(Logger.LogLevel.ERROR, ownerName, "CONFIG ERROR: Line {0}: Could not find value for config entry in file '{1}'.", lineNum, Path);
+                                if(key != null)
+                                    Logger.Log(Logger.LogLevel.ERROR, ownerName, "CONFIG ERROR: Line {0}: Could not find value for config entry with key '{2}' in file '{1}'.", lineNum, Path, key);
+                                else
+                                    Logger.Log(Logger.LogLevel.ERROR, ownerName, "CONFIG ERROR: Line {0}: Could not find value for config entry in file '{1}'.", lineNum, Path);
                                 successfulSplit = false;
                             }
                             if(!successfulSplit) continue;
@@ -120,8 +114,7 @@ namespace ZGenesis.Configuration {
                             }
                             if(t != EConfigValueType.COUNT) {
                                 ConfigValue val = ConfigValue.TryCreateFromString(ownerName, value, t);
-                                if(overriding) options[key] = val;
-                                else options.Add(key, val);
+                                options[key] = val;
                             } else {
                                 Logger.Log(Logger.LogLevel.ERROR, ownerName, "CONFIG ERROR: Line {0}: Invalid type '{1}' for configuration key '{2}' in file '{3}'.", lineNum, type, key, Path);
                             }
@@ -131,8 +124,32 @@ namespace ZGenesis.Configuration {
             } catch(Exception e) {
                 Logger.Log(Logger.LogLevel.ERROR, ownerName, "CONFIG ERROR: Could not open config file '{0}'. Exception: {1}", Path, e);
             }
-            unloadedConfigFiles.Remove(this);
-            onLoad();
+            foreach(string key in defaults.Keys) {
+                if(!options.ContainsKey(key)) {
+                    this[key] = defaults[key];
+                }
+            }
+            loadedConfigFiles.Add(Path.Substring(7), this); // substring(7) to remove "config/" from the filename
+        }
+        private void AddToFile(string key, ConfigValue value) {
+            using(FileStream fs = new FileStream(Path, FileMode.Append)) {
+                using(StreamWriter sr = new StreamWriter(fs)) {
+                    string type = Enum.GetName(typeof(EConfigValueType), value.type).ToLower();
+                    sr.WriteLine($"{type} {key} = {value.GetValueRaw()}");
+                }
+            }
+        }
+        public ConfigValue this[string key] {
+            get {
+                if(options.ContainsKey(key)) return options[key];
+                throw new KeyNotFoundException($"Could not find key '{key}' in config file '{Path}'");
+            }
+            set {
+                if(!options.ContainsKey(key)) {
+                    AddToFile(key, value);
+                }
+                options[key] = value;
+            }
         }
     }
 }

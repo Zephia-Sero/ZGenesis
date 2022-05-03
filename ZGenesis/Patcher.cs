@@ -8,25 +8,39 @@ using System.Threading;
 using UnityEngine;
 using ZGenesis.Events;
 using ZGenesis.Mod;
+using ZGenesis.BaseMod;
+using ZGenesis.Configuration;
 
 namespace ZGenesis {
     public static class Patcher {
-        public static Logger.LogLevel logLevel = Logger.LogLevel.INFO;
-        public static bool debugModeEnabled = false;
         private static readonly Queue<Event> eventQueue = new Queue<Event>();
         private static readonly List<Pair<List<Type>, Action<Event>>> eventHandlers = new List<Pair<List<Type>, Action<Event>>>();
         private static Thread eventThread;
         private static bool eventThreadRunning = false;
         public static readonly List<GenesisMod> loadedMods = new List<GenesisMod>();
-        private const int MAX_DEPENDENCY_ATTEMPTS = 1000;
 
         static Patcher() {
             Logger.Log(Logger.LogLevel.ESSENTIAL, "ZGenesis", "Patcher successfully instantiated.");
-            if(debugModeEnabled) {
+            
+            LoadMods();
+            ConfigureMods();
+            if(BaseMod.BaseMod.debugModeEnabled) {
                 Logger.Log(Logger.LogLevel.DEBUG, "ZGenesis", "DEBUG MODE ENABLED. Enabling Harmony debug mode.");
                 Harmony.DEBUG = true;
             }
-            Logger.Log(Logger.LogLevel.ESSENTIAL, "ZGenesis", "Loading mods");
+            PatchMods();
+
+            Logger.Log(Logger.LogLevel.ESSENTIAL, "ZGenesis", "Mod loading completed.");
+
+
+            if(BaseMod.BaseMod.debugModeEnabled) {
+                RegisterEventHandler(new List<Type> { typeof(Event) }, evt => {
+                    Logger.Log(Logger.LogLevel.DEBUG, "ZGenesis", evt.ToString());
+                });
+            }
+        }
+        private static void LoadMods() {
+            Logger.Log(Logger.LogLevel.ESSENTIAL, "ZGenesis", "Loading mod assemblies");
             LoadModAssemblies().ForEach(type => {
                 type.GetConstructor(new Type[] { }).Invoke(new object[] { });
             });
@@ -45,29 +59,35 @@ namespace ZGenesis {
                 Logger.Log(Logger.LogLevel.FATAL, "ZGenesis", "Could not load mods. Reason: Failed to find required patcher dependencies.");
                 Application.Quit(1);
             }
+        }
+        private static void ConfigureMods() {
+            Logger.Log(Logger.LogLevel.ESSENTIAL, "ZGenesis", "Stage: PreConfig");
+            loadedMods.ForEach(mod => { mod.PreConfig(); });
+            Logger.Log(Logger.LogLevel.ESSENTIAL, "ZGenesis", "Loading mod configs");
+            loadedMods.ForEach(mod => {
+                mod.LoadConfig();
+            });
+            Logger.Log(Logger.LogLevel.ESSENTIAL, "ZGenesis", "Stage: PostConfig");
+            loadedMods.ForEach(mod => { mod.PostConfig(); });
+        }
+        private static void PatchMods() {
+            Logger.Log(Logger.LogLevel.ESSENTIAL, "ZGenesis", "Stage: PrePatch");
+            loadedMods.ForEach(mod => { mod.PostPatch(); });
             Logger.Log(Logger.LogLevel.ESSENTIAL, "ZGenesis", "Patching mods");
             int i = 0;
-            while(DependentPatcher.incompletePatches.Count > 0 && i < MAX_DEPENDENCY_ATTEMPTS) {
+            while(DependentPatcher.incompletePatches.Count > 0 && i < BaseMod.BaseMod.MAX_PATCH_ATTEMPTS) {
                 loadedMods.ForEach(mod => {
                     if(!mod.PatchingFinished)
                         mod.TryPatch();
                 });
                 i++;
             }
-            if(i == MAX_DEPENDENCY_ATTEMPTS) {
-                Logger.Log(Logger.LogLevel.FATAL, "ZGenesis", "Mod patching took more than {0} cycles. Possible dependency cycle?", MAX_DEPENDENCY_ATTEMPTS);
+            if(i == BaseMod.BaseMod.MAX_PATCH_ATTEMPTS) {
+                Logger.Log(Logger.LogLevel.FATAL, "ZGenesis", "Mod patching took more than {0} cycles. Possible dependency cycle?", BaseMod.BaseMod.MAX_PATCH_ATTEMPTS);
                 Application.Quit(1);
             }
-            Logger.Log(Logger.LogLevel.ESSENTIAL, "ZGenesis", "Running PostPatches method in all mods.");
-            loadedMods.ForEach(mod => {
-                mod.PostPatches();
-            });
-            Logger.Log(Logger.LogLevel.ESSENTIAL, "ZGenesis", "Mod loading completed.");
-            if(debugModeEnabled) {
-                RegisterEventHandler(new List<Type> { typeof(Event) }, evt => {
-                    Logger.Log(Logger.LogLevel.DEBUG, "ZGenesis", evt.ToString());
-                });
-            }
+            Logger.Log(Logger.LogLevel.ESSENTIAL, "ZGenesis", "Stage: PostPatch");
+            loadedMods.ForEach(mod => { mod.PostPatch(); });
         }
         private static List<Type> LoadModAssemblies() {
             List<Type> loadedTypes = new List<Type>();

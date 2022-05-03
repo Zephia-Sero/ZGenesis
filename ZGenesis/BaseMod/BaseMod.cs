@@ -1,5 +1,6 @@
 ﻿using ZGenesis.Attributes;
 using ZGenesis.Mod;
+using ZGenesis.Configuration;
 
 namespace ZGenesis.BaseMod {
     [GenesisMod]
@@ -8,7 +9,20 @@ namespace ZGenesis.BaseMod {
         public override string ModNamespace => "com.zgenesis";
         public override string Description => "Base ZGenesis mod, including many event hooks for other mods to use.";
         public override string Version => "v0.1.0";
-        public BaseMod() {
+        internal static int MAX_PATCH_ATTEMPTS = 500;
+        internal static Logger.LogLevel logLevel = Logger.LogLevel.INFO;
+        internal static bool debugModeEnabled = false;
+        public BaseMod() { }
+        public override void PreConfig() {
+            config.Add("ZGenesis.zcfg");
+            AddDefaultConfig("ZGenesis.zcfg", "com.zgenesis.debug_mode", new ConfigValue(Name, debugModeEnabled, EConfigValueType.Bool));
+            AddDefaultConfig("ZGenesis.zcfg", "com.zgenesis.log_level", new ConfigValue(Name, (byte) logLevel, EConfigValueType.U8));
+        }
+        public override void PostConfig() {
+            debugModeEnabled = ConfigFile.loadedConfigFiles["ZGenesis.zcfg"]["com.zgenesis.debug_mode"].GetValue<bool>();
+            logLevel = (Logger.LogLevel) ConfigFile.loadedConfigFiles["ZGenesis.zcfg"]["com.zgenesis.log_level"].GetValue<byte>();
+        }
+        public override void PrePatch() {
             patchers.Add(new DependentPatcher(this, "event.network", typeof(NetworkPatches)));
             //patchers[0].AddDependency("com.example.dependency");
             patchers.Add(new DependentPatcher(this, "event.sylladex", typeof(SylladexPatches)));
@@ -20,6 +34,5 @@ namespace ZGenesis.BaseMod {
                 patcher.AddDependency("com.prebasemod.*");
             });
         }
-        public override void PostPatches() { }
     }
 }
