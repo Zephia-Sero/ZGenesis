@@ -26,7 +26,7 @@ namespace ZGenesis.Configuration {
                             string instruction = ls[0].ToUpper();
 
                             switch(instruction) {
-                            case "REQUIRE":
+                            case "AFTER":
                                 for(int i = 1; i < ls.Length; i++) {
                                     if(ls[i] == "") continue;
                                     else if(!loadAfter.Contains(ls[i])) {
