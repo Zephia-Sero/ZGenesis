@@ -10,7 +10,7 @@ namespace ZGenesis.Configuration {
     public class ConfigFile {
         public static readonly string[] CONFIG_VALUE_TYPES;
         public static Dictionary<string, ConfigValue> options = new Dictionary<string, ConfigValue>();
-        public static List<string> configFiles = new List<string>();
+        public static List<ConfigFile> unloadedConfigFiles = new List<ConfigFile>();
 
         public string Path { get; }
         public readonly ConfigHeader header;
@@ -25,14 +25,25 @@ namespace ZGenesis.Configuration {
             ownerName = owner.Name;
             header = new ConfigHeader(ownerName, Path);
             onLoad = new OnLoad(()=>{});
-            configFiles.Add(path);
+            unloadedConfigFiles.Add(this);
         }
         internal void AddDependent(ConfigFile other) {
             onLoad += other.TryLoadConfig;
         }
+        public void PreloadPrep() {
+            foreach(string loadFirst in header.loadAfter) {
+                unloadedConfigFiles.ForEach(cfg => {
+                    if(cfg.Path == loadFirst) {
+                        cfg.onLoad += this.TryLoadConfig;
+                    }
+                });
+            }
+        }
         public void TryLoadConfig() {
             foreach(string loadFirst in header.loadAfter) {
-                if(configFiles.Contains(loadFirst)) return;
+                if(unloadedConfigFiles.Any(cfg => {
+                    return cfg.Path == loadFirst;
+                })) return;
             }
             ForceLoadConfig();
         }
@@ -120,7 +131,7 @@ namespace ZGenesis.Configuration {
             } catch(Exception e) {
                 Logger.Log(Logger.LogLevel.ERROR, ownerName, "CONFIG ERROR: Could not open config file '{0}'. Exception: {1}", Path, e);
             }
-            configFiles.Remove(Path);
+            unloadedConfigFiles.Remove(this);
             onLoad();
         }
     }
