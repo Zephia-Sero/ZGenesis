@@ -5,12 +5,12 @@ using System.IO;
 namespace ZGenesis {
     public static class Logger {
         public enum LogLevel {
-            ESSENTIAL,
             DEBUG,
             INFO,
             WARNING,
             ERROR,
-            FATAL
+            FATAL,
+            ESSENTIAL,
         }
         private static StreamWriter logSW;
         private static StreamWriter latestlogSW;
@@ -24,6 +24,7 @@ namespace ZGenesis {
             Log(LogLevel.INFO, modname, message, args);
         }
         public static void Log(LogLevel level, string modname, string message, params object[] args) {
+            if(level < Patcher.logLevel) return;
             string time = DateTime.Now.ToString("HH:mm:ss+fff");
             logSW.WriteLine(
                 $"{time} <{level}> " + new string(' ',9-level.ToString().Length) + $"[{modname}] {string.Format(message,args)}"
