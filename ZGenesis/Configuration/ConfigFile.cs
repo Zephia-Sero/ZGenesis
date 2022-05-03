@@ -12,14 +12,14 @@ namespace ZGenesis.Configuration {
         public string Path { get; }
         public static Dictionary<string, ConfigValue> options = new Dictionary<string, ConfigValue>();
         public Dictionary<string, ConfigValue> fileOptions = new Dictionary<string, ConfigValue>();
-        private readonly GenesisMod owner;
+        private readonly string ownerName;
         
         static ConfigFile() {
             CONFIG_VALUE_TYPES = Enum.GetNames(typeof(EConfigValueType));
         }
         public ConfigFile(GenesisMod owner, string path) {
             Path = path;
-            this.owner = owner;
+            this.ownerName = owner.Name;
             LoadFile();
         }
 
@@ -33,7 +33,8 @@ namespace ZGenesis.Configuration {
                     while((line = sr.ReadLine()) != null) {
                         lineNum++;
                         if(multilineJustSet) multilineJustSet = false;
-
+                        bool overriding = line.StartsWith("!");
+                        if(overriding) line = line.Substring(1);
                         int multilineStartIdx = line.IndexOf("/*");
                         int multilineEndIdx = line.IndexOf("*/");
 
@@ -65,21 +66,21 @@ namespace ZGenesis.Configuration {
 
                         bool successfulSplit = true;
                         if(type == null) {
-                            Logger.Log(Logger.LogLevel.ERROR, owner.Name, "CONFIG ERROR: Line {0}: Could not find type for config entry in file '{1}'.", lineNum, Path);
+                            Logger.Log(Logger.LogLevel.ERROR, ownerName, "CONFIG ERROR: Line {0}: Could not find type for config entry in file '{1}'.", lineNum, Path);
                             successfulSplit = false;
                         }
                         if(key == null) {
-                            Logger.Log(Logger.LogLevel.ERROR, owner.Name, "CONFIG ERROR: Line {0}: Could not find key for config entry in file '{1}'.", lineNum, Path);
+                            Logger.Log(Logger.LogLevel.ERROR, ownerName, "CONFIG ERROR: Line {0}: Could not find key for config entry in file '{1}'.", lineNum, Path);
                             successfulSplit = false;
-                        } else if(options.ContainsKey(key)) {
-                            Logger.Log(Logger.LogLevel.ERROR, owner.Name, "CONFIG ERROR: Line {0}: Duplicate configuration key in file '{1}'", lineNum, Path);
+                        } else if(options.ContainsKey(key) && !overriding) {
+                            Logger.Log(Logger.LogLevel.ERROR, ownerName, "CONFIG ERROR: Line {0}: Duplicate configuration key in file '{1}'", lineNum, Path);
                         }
                         string value = "";
                         if(valueStart != -1) {
                             value = line.Substring(valueStart).Trim();
                         }
                         if(value == "") {
-                            Logger.Log(Logger.LogLevel.ERROR, owner.Name, "CONFIG ERROR: Line {0}: Could not find value for config entry in file '{1}'.", lineNum, Path);
+                            Logger.Log(Logger.LogLevel.ERROR, ownerName, "CONFIG ERROR: Line {0}: Could not find value for config entry in file '{1}'.", lineNum, Path);
                             successfulSplit = false;
                         }
                         if(!successfulSplit) continue;
@@ -92,12 +93,17 @@ namespace ZGenesis.Configuration {
                             }
                         }
                         if(t != EConfigValueType.COUNT) {
-                            ConfigValue val = ConfigValue.TryCreateFromString(value, t);
+                            ConfigValue val = ConfigValue.TryCreateFromString(ownerName, value, t);
+
                             if(key.StartsWith("config.")) {
-                                fileOptions.Add(key, val);
+                                if(overriding) fileOptions[key] = val;
+                                else fileOptions.Add(key, val);
+                            } else {
+                                if(overriding) options[key] = val;
+                                else options.Add(key, val);
                             }
                         } else {
-                            Logger.Log(Logger.LogLevel.ERROR, owner.Name, "CONFIG ERROR: Line {0}: Invalid type '{1}' for configuration key '{2}' in file '{3}'.", lineNum, type, key, Path);
+                            Logger.Log(Logger.LogLevel.ERROR, ownerName, "CONFIG ERROR: Line {0}: Invalid type '{1}' for configuration key '{2}' in file '{3}'.", lineNum, type, key, Path);
                         }
                     }
                 }
