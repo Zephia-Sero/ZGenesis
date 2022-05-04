@@ -45,24 +45,29 @@ namespace ZGenesis.BaseMod {
         
         [ModPatch("prefix", "Assembly-CSharp", "Sylladex.SetModus")]
         private static void CustomModusSetup_SylladexSetModus(Sylladex __instance, ref Modus ___captchaModus, ref GameObject ___modusObject, ref string ___modusName, AudioClip ___clipSwitch, string modus, bool playSound) {
-            Logger.Log("TESTF", "{0}", modus);
             if(ModusRegistry.HasModus(modus)) {
-                Logger.Log("TESTG", "{0}", modus);
                 ___captchaModus = (Modus) ___modusObject.AddComponent(ModusRegistry.GetModus(modus));
                 ___modusName = modus;
                 if(playSound) {
-                    Logger.Log("TESTH", "{0}", modus);
                     __instance.PlaySoundEffect(___clipSwitch);
+                }
+            }
+        }
+
+        [ModPatch("prefix", "Assembly-CSharp", "Sylladex.Start")]
+        private static void CustomModusSetup_SylladexStart(ref List<string> ___modi) {
+            foreach(string modus in ModusRegistry.ModusNames) {
+                if(!___modi.Contains(modus)) {
+                    Logger.Log("TEST", "Adding modus {0}", modus);
+                    ___modi.Add(modus);
                 }
             }
         }
 
         [ModPatch("prefix", "Assembly-CSharp", "AddCaptchamodusAction.Start")]
         private static bool CustomModusSetup_AddCaptchaModusActionStart(AddCaptchamodusAction __instance, ref Sprite ___sprite) {
-            Logger.Log("TESTE", "{0}", __instance.modus);
             if(ModusRegistry.HasModus(__instance.modus)) {
                 ___sprite = (Sprite) ModusRegistry.GetFieldFromModus(__instance.modus, "sprite");
-                Logger.Log("TESTD", "{0}", __instance.modus);
                 return false;
             }
             return true;
@@ -70,9 +75,7 @@ namespace ZGenesis.BaseMod {
 
         [ModPatch("prefix", "Assembly-CSharp", "ModusPickerComponent.ModusChange")]
         private static bool CustomModusSetup_ModPickerComponentModusChange(ref Image ___image, string to) {
-            Logger.Log("TESTC", "{0}", to);
             if(ModusRegistry.HasModus(to)) {
-                Logger.Log("TESTB", "'{0}': '{1}'", to, (Sprite) ModusRegistry.GetFieldFromModus(to, "sprite"));
                 ___image.sprite = (Sprite) ModusRegistry.GetFieldFromModus(to, "sprite");
                 return false;
             }
@@ -92,10 +95,8 @@ namespace ZGenesis.BaseMod {
 
         [ModPatch("prefix", "Assembly-CSharp", "Modus.SetIcon")]
         private static bool CustomModusSetup_ModusSetIcon(Modus __instance, string title) {
-            Logger.Log("TEST??", "{0}", title);
             if(ModusRegistry.HasModus(title)) {
                 __instance.sylladex.modusIcon.sprite = (Sprite) ModusRegistry.GetFieldFromModus(title, "sprite");
-                Logger.Log("TEST", "{0}", title);
                 return false;
             }
             return true;
@@ -105,7 +106,6 @@ namespace ZGenesis.BaseMod {
         private static void CustomModusSetup_ModusPickerReadDescriptions(ref Dictionary<string,string> ___modusDescription) {
             foreach(string modus in ModusRegistry.ModusNames) {
                 ___modusDescription[modus] = (string) ModusRegistry.GetFieldFromModus(modus, "description");
-                Logger.Log("READ", "{0}", modus);
             }
         }
 
