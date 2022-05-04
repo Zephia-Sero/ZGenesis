@@ -29,6 +29,10 @@ namespace ZGenesis {
                 Logger.Log(Logger.LogLevel.ESSENTIAL, "ZGenesis", "Creating logs directory.");
                 Directory.CreateDirectory("./logs");
             }
+            if(!Directory.Exists("./res")) {
+                Logger.Log(Logger.LogLevel.ESSENTIAL, "ZGenesis", "Creating mod resources directory.");
+                Directory.CreateDirectory("./res");
+            }
             LoadMods();
             ConfigureMods();
             if(BaseMod.BaseMod.debugModeEnabled) {

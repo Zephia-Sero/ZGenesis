@@ -1,6 +1,13 @@
-﻿using ZGenesis.Attributes;
+﻿using System.IO;
+using System.Linq;
+using ZGenesis.Attributes;
 using ZGenesis.Mod;
 using ZGenesis.Configuration;
+using ZGenesis.Registry;
+using ZGenesis.Objects;
+using UnityEngine;
+using System.Collections;
+using System.Collections.Generic;
 
 namespace ZGenesis.BaseMod {
     [GenesisMod]
@@ -12,7 +19,11 @@ namespace ZGenesis.BaseMod {
         internal static int MAX_PATCH_ATTEMPTS = 500;
         internal static Logger.LogLevel logLevel = Logger.LogLevel.INFO;
         internal static bool debugModeEnabled = false;
-        public BaseMod() { }
+        internal static BaseMod Instance;
+        public BaseMod() {
+            Instance = this;
+        }
+        
         public override void PreConfig() {
             config.Add("ZGenesis.zcfg");
             AddDefaultConfig("ZGenesis.zcfg", "debug_mode", new ConfigValue(Name, debugModeEnabled, EConfigValueType.Bool));

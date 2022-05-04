@@ -14,8 +14,26 @@
     <Reference Include="Mirror">
       <HintPath>..\BuildDeps\Mirror.dll</HintPath>
     </Reference>
+    <Reference Include="UnityEngine">
+      <HintPath>..\BuildDeps\UnityEngine.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.AudioModule">
+      <HintPath>..\BuildDeps\UnityEngine.AudioModule.dll</HintPath>
+    </Reference>
     <Reference Include="UnityEngine.CoreModule">
       <HintPath>..\BuildDeps\UnityEngine.CoreModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.ImageConversionModule">
+      <HintPath>..\BuildDeps\UnityEngine.ImageConversionModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.UI">
+      <HintPath>..\BuildDeps\UnityEngine.UI.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.UIElementsModule">
+      <HintPath>..\BuildDeps\UnityEngine.UIElementsModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.UIModule">
+      <HintPath>..\BuildDeps\UnityEngine.UIModule.dll</HintPath>
     </Reference>
   </ItemGroup>
 
