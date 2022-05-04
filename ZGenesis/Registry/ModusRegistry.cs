@@ -17,6 +17,7 @@ namespace ZGenesis.Registry {
             }
         }
         public static bool HasModus(string modusName) => modusRegistry.ContainsKey(modusName);
+        public static string[] ModusNames => modusRegistry.Keys.ToArray();
         public static Type GetModus(string modusName) {
             if(HasModus(modusName)) {
                 return modusRegistry[modusName];
