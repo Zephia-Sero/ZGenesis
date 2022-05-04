@@ -79,7 +79,7 @@ namespace ZGenesis {
         }
         private static void PatchMods() {
             Logger.Log(Logger.LogLevel.ESSENTIAL, "ZGenesis", "Stage: PrePatch");
-            loadedMods.ForEach(mod => { mod.PostPatch(); });
+            loadedMods.ForEach(mod => { mod.PrePatch(); });
             Logger.Log(Logger.LogLevel.ESSENTIAL, "ZGenesis", "Patching mods");
             int i = 0;
             while(DependentPatcher.incompletePatches.Count > 0 && i < BaseMod.BaseMod.MAX_PATCH_ATTEMPTS) {
