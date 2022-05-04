@@ -58,9 +58,14 @@ namespace ZGenesis.BaseMod {
             sprite = Sprite.Create(tex, new Rect(0,0,tex.width,tex.height), new Vector2(.5f,.5f));
             description = "A Test Modus.";
         }
-        public TestModus() {
+        private new void Awake() {
+            base.Awake();
+            SetIcon("Queue");
+            SetColor(new Color(0, 255f, 0));
             itemCapacity = 8;
             separation = new Vector2(-complexcardsize.x / 4f, complexcardsize.y / 4f);
+        }
+        protected override void UpdatePositions() {
             SetIcon("Queue");
             SetColor(new Color(0, 255f, 0));
         }
