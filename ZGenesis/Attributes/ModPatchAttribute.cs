@@ -10,18 +10,13 @@ namespace ZGenesis.Attributes {
         public string patchType;
         public Assembly asm;
         public string originalMethod;
-        public string[] dependencies;
-        public ModPatchAttribute(string patchType, string asmName, string originalMethod, string[] dependencies) {
+        public ModPatchAttribute(string patchType, string asmName, string originalMethod) {
             this.patchType = patchType.ToLower();
             asm = AppDomain.CurrentDomain.GetAssemblies().SingleOrDefault(asm => asm.GetName().Name == asmName);
             this.originalMethod = originalMethod;
-            this.dependencies = dependencies;
         }
-        public ModPatchAttribute(string patchType, string asmName, string originalMethod) : this(patchType, asmName, originalMethod, new string[] { }) { }
         public override string ToString() {
-            if(dependencies.Length == 0)
-                return string.Format("[ModPatch(\"{0}\", \"{1}\", \"{2}\")]", patchType, asm.GetName().Name, originalMethod);
-            return string.Format("[ModPatch(\"{0}\", \"{1}\", \"{2}\", {3})]", patchType, asm.GetName().Name, originalMethod, dependencies);
+            return string.Format("[ModPatch(\"{0}\", \"{1}\", \"{2}\")]", patchType, asm.GetName().Name, originalMethod);
         }
         public void Patch(Harmony harmony, MethodInfo patchMethod) {
             try {
@@ -30,10 +25,9 @@ namespace ZGenesis.Attributes {
                 string methodName = originalMethod.Substring(1 + splitidx);
                 Type type = asm.GetType(className) ?? throw new Exception($"Type {className} not found in assembly {asm}.");
                 MethodInfo method = type.GetMethod(methodName,
-                                    BindingFlags.Instance  | BindingFlags.Static |
-                                    BindingFlags.NonPublic | BindingFlags.Public )
-                                    ?? throw new Exception($"Method {methodName} not found for type {className} in assembly {asm}.");
-                MethodBase methodB = method.GetBaseDefinition();
+                                    BindingFlags.Instance | BindingFlags.Static |
+                                    BindingFlags.NonPublic | BindingFlags.Public)
+                                    ?? throw new Exception($"Method {methodName} not found for type {className} in assembly {asm}.");               MethodBase methodB = method.GetBaseDefinition();
                 switch(patchType) {
                 case "prefix":
                     harmony.Patch(methodB, new HarmonyMethod(patchMethod));
@@ -51,7 +45,7 @@ namespace ZGenesis.Attributes {
                     throw new Exception(string.Format("Invalid patch type: \"{0}\"", patchType));
                 }
             } catch(Exception e) {
-                Logger.Log(Logger.LogLevel.FATAL,"ZGenesis", "ERROR: Could not patch {0}:\n{1}", ToString(), e.ToString());
+                Logger.Log(Logger.LogLevel.FATAL, "ZGenesis", "ERROR: Could not patch {0}:\n{1}", ToString(), e.ToString());
                 Application.Quit(1);
             }
         }
