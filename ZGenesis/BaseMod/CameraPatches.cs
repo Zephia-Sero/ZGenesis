@@ -8,8 +8,8 @@ using System.Reflection.Emit;
 
 namespace ZGenesis.BaseMod {
     [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "Reflection will call these when patched.")]
-    internal static class MiscPatches {
-        // Miscellaneous patches
+    internal static class CameraPatches {
+        // Camera patches
         private readonly static ConstructorInfo c_CameraRotateEvent = typeof(CameraRotateEvent).GetConstructor(new Type[] { typeof(MSPAOrthoController), typeof(float) });
         private readonly static FieldInfo f_CameraRotationControls__cameraController = typeof(CameraRotationControls).GetField("cameraController", BindingFlags.NonPublic | BindingFlags.Instance);
         [ModPatch("transpiler", "Assembly-CSharp", "CameraRotationControls.Rotate")]
