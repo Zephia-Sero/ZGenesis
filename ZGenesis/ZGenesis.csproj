@@ -14,6 +14,9 @@
     <Reference Include="Mirror">
       <HintPath>..\BuildDeps\Mirror.dll</HintPath>
     </Reference>
+    <Reference Include="UnityEngine.AudioModule">
+      <HintPath>..\BuildDeps\UnityEngine.AudioModule.dll</HintPath>
+    </Reference>
     <Reference Include="UnityEngine.CoreModule">
       <HintPath>..\BuildDeps\UnityEngine.CoreModule.dll</HintPath>
     </Reference>

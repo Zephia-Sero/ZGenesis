@@ -18,6 +18,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "BuildDeps", "BuildDeps", "{
 		BuildDeps\0Harmony.dll = BuildDeps\0Harmony.dll
 		BuildDeps\Assembly-CSharp.dll = BuildDeps\Assembly-CSharp.dll
 		BuildDeps\Mirror.dll = BuildDeps\Mirror.dll
+		BuildDeps\UnityEngine.AudioModule.dll = BuildDeps\UnityEngine.AudioModule.dll
 		BuildDeps\UnityEngine.CoreModule.dll = BuildDeps\UnityEngine.CoreModule.dll
 	EndProjectSection
 EndProject

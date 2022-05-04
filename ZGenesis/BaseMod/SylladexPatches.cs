@@ -5,6 +5,9 @@ using System.Reflection;
 using System.Reflection.Emit;
 using ZGenesis.Attributes;
 using ZGenesis.Events;
+using ZGenesis.Registry;
+using ZGenesis.Objects;
+using UnityEngine;
 
 namespace ZGenesis.BaseMod {
     [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "Reflection will call these when patched.")]
@@ -29,6 +32,18 @@ namespace ZGenesis.BaseMod {
                     yield return new CodeInstruction(OpCodes.Ldfld, f_Modus__sylladex);
                     yield return new CodeInstruction(OpCodes.Newobj, c_SylladexAddItemEvent);
                     yield return new CodeInstruction(OpCodes.Pop);
+                }
+            }
+        }
+
+        // Custom modus patches
+        [ModPatch("prefix", "Assembly-CSharp", "Sylladex.SetModus")]
+        private static void CustomModusSetup(Sylladex __instance, ref Modus ___captchaModus, ref GameObject ___modusObject, ref string ___modusName, AudioClip __clipSwitch, string modus, bool playSound) {
+            if(ModusRegistry.HasModus(modus)) {
+                ___captchaModus = (Modus) ___modusObject.AddComponent(ModusRegistry.GetModus(modus));
+                ___modusName = modus;
+                if(playSound) {
+                    __instance.PlaySoundEffect(__clipSwitch);
                 }
             }
         }
