@@ -39,6 +39,7 @@ namespace ZGenesis.BaseMod {
             patchers.Add(new DependentPatcher(this, "event.sylladex", typeof(SylladexPatches)));
             //patchers[1].AddDependency("com.example.optional.soft.dependencies.*");
             patchers.Add(new DependentPatcher(this, "event.camera", typeof(CameraPatches)));
+            patchers.Add(new DependentPatcher(this, "event.chat", typeof(ChatPatches)));
 
             patchers.ForEach(patcher => {
                 // All BaseMod patches should be patched after any existing pre-basemod patches run.

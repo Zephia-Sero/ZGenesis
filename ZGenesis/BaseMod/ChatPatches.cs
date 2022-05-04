@@ -13,7 +13,7 @@ using ZGenesis.Registry;
 
 namespace ZGenesis.BaseMod {
     [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "Reflection will call these when patched.")]
-    internal static class CommandPatches {
+    internal static class ChatPatches {
         private readonly static MethodInfo m_NetworkServer__SendToAll = typeof(NetworkServer).GetMethod("SendToAll", BindingFlags.Public | BindingFlags.Static);
         private readonly static FieldInfo f_Chat__inputField = typeof(Chat).GetField("inputField", BindingFlags.NonPublic | BindingFlags.Instance);
         private readonly static MethodInfo m_InputField__get_text = typeof(InputField).GetMethod("get_text", BindingFlags.Public | BindingFlags.Instance);

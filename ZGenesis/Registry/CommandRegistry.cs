@@ -15,5 +15,8 @@ namespace ZGenesis.Registry {
                 Logger.Log(Logger.LogLevel.WARNING, modname, "Command with alias '{0}' already added!", alias);
             }
         }
+        public static bool TryRun(string command) {
+            return false;
+        }
     }
 }
