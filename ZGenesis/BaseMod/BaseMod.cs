@@ -45,52 +45,5 @@ namespace ZGenesis.BaseMod {
                 patcher.AddDependency("com.prebasemod.*");
             });
         }
-        public override void PostPatch() {
-            ModusRegistry.RegisterModus(Name, "Test Modus", typeof(TestModus));
-        }
-    }
-    public class TestModus : ModdedModus {
-        private List<Card> items = new List<Card>();
-        public override void Load(ModusData data) => throw new System.NotImplementedException();
-        public override ModusData Save() => throw new System.NotImplementedException();
-
-        protected static readonly string description;
-        protected static readonly Sprite sprite;
-        static TestModus() {
-            sprite = ZUtils.LoadSpriteAsset(BaseMod.Instance.Name, "test.png");
-            description = "A Test Modus.";
-        }
-        private new void Awake() {
-            base.Awake();
-            SetIcon("Queue");
-            SetColor(new Color(0, 255f, 0));
-            itemCapacity = 8;
-            separation = new Vector2(-complexcardsize.x / 4f, complexcardsize.y / 4f);
-        }
-        protected override bool AddItemToModus(Item toAdd) {
-            if(items.Count >= itemCapacity) return false;
-            items.Add(MakeCard(toAdd, 0, -1));
-            return true;
-        }
-        protected override bool IsRetrievable(Card item) {
-            if(items.Count == 0) return false;
-            return item == items.First() || item == items.Last();
-        }
-        protected override bool RemoveItemFromModus(Card item) {
-            if(!IsRetrievable(item)) return false;
-            items.Remove(item);
-            return true;
-        }
-        protected override IEnumerable<Card> GetItemList() => items;
-        protected override void Load(Item[] itemsIn) {
-            items = new List<Card>();
-
-            for(int i = 0; i < itemsIn.Length; i++) {
-                items.Add(MakeCard(itemsIn[i], i));
-            }
-        }
-        public override int GetAmount() {
-            return items.Count;
-        }
     }
 }
