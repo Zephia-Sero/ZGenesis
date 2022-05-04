@@ -22,7 +22,7 @@ namespace ZGenesis.Registry {
             Logger.Log(Logger.LogLevel.ERROR, "ZGenesis", "Modus named '{0}' has not been registered!", modusName);
             return null;
         }
-        // TODO: Not loading images/sprites/descriptions for some reason.
+        
         internal static object GetFieldFromModus(string modusName, string fieldName) {
             if(!modusRegistry.ContainsKey(modusName)) {
                 Logger.Log(Logger.LogLevel.ERROR, "ZGenesis", "Modus named '{0}' has not been registered and thus cannot get the value of field '{1}'!", modusName, fieldName);
