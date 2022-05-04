@@ -7,15 +7,17 @@ using System.Threading.Tasks;
 using UnityEngine;
 using System.Reflection;
 namespace ZGenesis.Objects.Default {
-
     internal class ClonedFIFOModus : ModdedModus {
-        private readonly FIFOModus basedOn;
+        internal FIFOModus basedOn;
 
         public override int ItemCapacity { get => base.ItemCapacity; set => base.ItemCapacity = value; }
 
         public override void Load(ModusData data) => basedOn.Load(data);
         public override ModusData Save() => basedOn.Save();
-        public override int GetHashCode() => basedOn.GetHashCode();
+        public override int GetHashCode() {
+            Logger.Log("TESTabcdef", "{0}", basedOn);
+            return basedOn.GetHashCode();
+        }
         public override bool Equals(object other) => basedOn.Equals(other);
         public override string ToString() => basedOn.ToString();
         protected override void UpdatePositions() {
@@ -50,11 +52,8 @@ namespace ZGenesis.Objects.Default {
         public static new string Description => description;
         private static readonly string description;
         static ClonedFIFOModus() {
-            Type t = typeof(FIFOModus);
-            string modus = "Queue";
             description = "Access only the items in the front of the queue. First in, first out.";
-            sprite = Resources.Load<Sprite>("Modi/" + modus + "Modus");
-            Logger.Log("CREATING DEFAULT MODUS", "{0}: '{1}'", modus, t);
+            sprite = Resources.Load<Sprite>("Modi/QueueModus"); 
         }
         public ClonedFIFOModus(FIFOModus basedOn) {
             this.basedOn = basedOn;
@@ -64,7 +63,7 @@ namespace ZGenesis.Objects.Default {
 
 
     internal class ClonedFILOModus : ModdedModus {
-        private readonly FILOModus basedOn;
+        internal FILOModus basedOn;
 
         public override int ItemCapacity { get => base.ItemCapacity; set => base.ItemCapacity = value; }
 
@@ -116,7 +115,7 @@ namespace ZGenesis.Objects.Default {
 
 
     internal class ClonedTreeModus : ModdedModus {
-        private readonly TreeModus basedOn;
+        internal TreeModus basedOn;
 
         public override int ItemCapacity { get => base.ItemCapacity; set => base.ItemCapacity = value; }
 
@@ -168,7 +167,7 @@ namespace ZGenesis.Objects.Default {
 
 
     internal class ClonedHashmapModus : ModdedModus {
-        private readonly HashmapModus basedOn;
+        internal HashmapModus basedOn;
 
         public override int ItemCapacity { get => base.ItemCapacity; set => base.ItemCapacity = value; }
 
@@ -220,7 +219,7 @@ namespace ZGenesis.Objects.Default {
 
 
     internal class ClonedArrayModus : ModdedModus {
-        private readonly ArrayModus basedOn;
+        internal ArrayModus basedOn;
 
         public override int ItemCapacity { get => base.ItemCapacity; set => base.ItemCapacity = value; }
 

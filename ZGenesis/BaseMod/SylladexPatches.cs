@@ -8,6 +8,7 @@ using ZGenesis.Attributes;
 using ZGenesis.Events;
 using ZGenesis.Registry;
 using ZGenesis.Objects;
+using ZGenesis.Objects.Default;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -44,14 +45,29 @@ namespace ZGenesis.BaseMod {
         // Custom modus patches
         
         [ModPatch("prefix", "Assembly-CSharp", "Sylladex.SetModus")]
-        private static void CustomModusSetup_SylladexSetModus(Sylladex __instance, ref Modus ___captchaModus, ref GameObject ___modusObject, ref string ___modusName, AudioClip ___clipSwitch, string modus, bool playSound) {
+        private static bool CustomModusSetup_SylladexSetModus(Sylladex __instance, ref Modus ___captchaModus, ref GameObject ___modusObject, ref string ___modusName, AudioClip ___clipSwitch, string modus, bool playSound) {
             if(ModusRegistry.HasModus(modus)) {
-                ___captchaModus = (Modus) ___modusObject.AddComponent(ModusRegistry.GetModus(modus));
+                Type t = ModusRegistry.GetModus(modus);
+                Component component = ___modusObject.AddComponent(t);
+                if(t == typeof(ClonedFIFOModus)) {
+                    ((ClonedFIFOModus) component).basedOn = new FIFOModus();
+                } else if(t == typeof(ClonedFILOModus)) {
+                    ((ClonedFILOModus) component).basedOn = new FILOModus();
+                } else if(t == typeof(ClonedArrayModus)) {
+                    ((ClonedArrayModus) component).basedOn = new ArrayModus();
+                } else if(t == typeof(ClonedHashmapModus)) {
+                    ((ClonedHashmapModus) component).basedOn = new HashmapModus();
+                } else if(t == typeof(ClonedTreeModus)) {
+                    ((ClonedTreeModus) component).basedOn = new TreeModus();
+                }
+                ___captchaModus = (Modus) component;
                 ___modusName = modus;
                 if(playSound) {
                     __instance.PlaySoundEffect(___clipSwitch);
                 }
+                return false;
             }
+            return true;
         }
 
         [ModPatch("prefix", "Assembly-CSharp", "Sylladex.Start")]
@@ -65,9 +81,10 @@ namespace ZGenesis.BaseMod {
         }
 
         [ModPatch("prefix", "Assembly-CSharp", "AddCaptchamodusAction.Start")]
-        private static bool CustomModusSetup_AddCaptchaModusActionStart(AddCaptchamodusAction __instance, ref Sprite ___sprite) {
+        private static bool CustomModusSetup_AddCaptchaModusActionStart(AddCaptchamodusAction __instance, ref Sprite ___sprite, ref string ___desc) {
             if(ModusRegistry.HasModus(__instance.modus)) {
                 ___sprite = (Sprite) ModusRegistry.GetFieldFromModus(__instance.modus, "sprite");
+                ___desc = "Get " + __instance.modus + "Modus";
                 return false;
             }
             return true;
@@ -109,14 +126,45 @@ namespace ZGenesis.BaseMod {
             }
         }
 
+        private readonly static MethodInfo m_ModusPicker__ReadDescriptions = typeof(ModusPicker).GetMethod("ReadDescriptions", BindingFlags.NonPublic | BindingFlags.Static);
+        private readonly static FieldInfo f_ModusPicker__modusOption = typeof(ModusPicker).GetField("modusOption", BindingFlags.NonPublic | BindingFlags.Instance);
+        private readonly static FieldInfo f_ModusPicker__modusDescription = typeof(ModusPicker).GetField("modusDescription", BindingFlags.NonPublic | BindingFlags.Static);
+        private readonly static FieldInfo f_ModusPicker__OnPickModus = typeof(ModusPicker).GetField("OnPickModus", BindingFlags.NonPublic | BindingFlags.Instance);
+        [ModPatch("prefix", "Assembly-CSharp", "ModusPicker.AddModus")]
+        private static bool CustomModusSetup_ModusPickerAddModus(ModusPicker __instance, string modus) {
+            m_ModusPicker__ReadDescriptions.Invoke(null, new object[] { });
+            Image modusOption = (Image) f_ModusPicker__modusOption.GetValue(__instance);
+            Image image = (modusOption.sprite == null) ? modusOption : UnityEngine.Object.Instantiate<Image>(modusOption, modusOption.transform.parent);
+            image.sprite = Resources.Load<Sprite>("Modi/" + modus + "Modus");
+            image.name = modus + "Modus";
+            if(ModusRegistry.HasModus(modus)) {
+                image.sprite = (Sprite) ModusRegistry.GetFieldFromModus(modus, "sprite");
+            }
+            Button.ButtonClickedEvent onClick = image.GetComponent<Button>().onClick;
+            onClick.RemoveAllListeners();
+            onClick.AddListener(delegate {
+                Action<string> OnPickModus = (Action<string>) f_ModusPicker__OnPickModus.GetValue(__instance);
+                OnPickModus(modus);
+            });
+            image.transform.GetChild(0).GetComponent<Text>().text = modus;
+            if(((Dictionary<string, string>) f_ModusPicker__modusDescription.GetValue(null)).TryGetValue(modus, out string text)) {
+                image.transform.GetChild(1).GetChild(0).GetComponent<Text>().text = text;
+                return false;
+            }
+            image.transform.GetChild(1).GetChild(0).gameObject.SetActive(false);
+            return false;
+        }
+        /*
         private readonly static MethodInfo m_Image__set_sprite = typeof(Image).GetMethod("set_sprite", BindingFlags.Public | BindingFlags.Instance);
         private readonly static MethodInfo m_ModusRegistry__GetFieldFromModus = typeof(ModusRegistry).GetMethod("GetFieldFromModus", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static);
         [ModPatch("transpiler", "Assembly-CSharp", "ModusPicker.AddModus")]
         private static IEnumerable<CodeInstruction> CustomModusSetup_ModusPickerAddModus(IEnumerable<CodeInstruction> instructions, ILGenerator generator) {
             LocalBuilder lb = generator.DeclareLocal(typeof(Sprite));
+            Label label =  generator.DefineLabel();
             foreach(CodeInstruction instruction in instructions) {
                 yield return instruction;
                 if(instruction.Calls(m_Image__set_sprite)) {
+                    
                     yield return new CodeInstruction(OpCodes.Ldarg_1);
                     yield return new CodeInstruction(OpCodes.Ldstr, "sprite");
                     yield return new CodeInstruction(OpCodes.Call, m_ModusRegistry__GetFieldFromModus);
@@ -125,8 +173,9 @@ namespace ZGenesis.BaseMod {
                     yield return new CodeInstruction(OpCodes.Ldloc_1);
                     yield return new CodeInstruction(OpCodes.Ldloc_S, lb.LocalIndex);
                     yield return new CodeInstruction(OpCodes.Call, m_Image__set_sprite);
+                    generator.MarkLabel(label);
                 }
             }
-        }
+        }*/
     }
 }

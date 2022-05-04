@@ -1,10 +1,13 @@
 ﻿using System.IO;
+using System.Linq;
 using ZGenesis.Attributes;
 using ZGenesis.Mod;
 using ZGenesis.Configuration;
 using ZGenesis.Registry;
 using ZGenesis.Objects;
 using UnityEngine;
+using System.Collections;
+using System.Collections.Generic;
 
 namespace ZGenesis.BaseMod {
     [GenesisMod]
@@ -43,17 +46,48 @@ namespace ZGenesis.BaseMod {
         }
     }
     public class TestModus : ModdedModus {
+        private List<Card> items = new List<Card>();
         public override void Load(ModusData data) => throw new System.NotImplementedException();
         public override ModusData Save() => throw new System.NotImplementedException();
-        public static new string Description => description;
-        private static readonly string description;
-        public static new Sprite Sprite => sprite;
-        private static readonly Sprite sprite;
+
+        protected static readonly string description;
+        protected static readonly Sprite sprite;
         static TestModus() {
             Texture2D tex = new Texture2D(2, 2);
             tex.LoadImage(File.ReadAllBytes("test.png"));
             sprite = Sprite.Create(tex, new Rect(0,0,tex.width,tex.height), new Vector2(.5f,.5f));
             description = "A Test Modus.";
+        }
+        public TestModus() {
+            itemCapacity = 8;
+            separation = new Vector2(-complexcardsize.x / 4f, complexcardsize.y / 4f);
+            SetIcon("Queue");
+            SetColor(new Color(0, 255f, 0));
+        }
+        protected override bool AddItemToModus(Item toAdd) {
+            if(items.Count >= itemCapacity) return false;
+            items.Add(MakeCard(toAdd, 0, -1));
+            return true;
+        }
+        protected override bool IsRetrievable(Card item) {
+            if(items.Count == 0) return false;
+            return item == items.First() || item == items.Last();
+        }
+        protected override bool RemoveItemFromModus(Card item) {
+            if(!IsRetrievable(item)) return false;
+            items.Remove(item);
+            return true;
+        }
+        protected override IEnumerable<Card> GetItemList() => items;
+        protected override void Load(Item[] itemsIn) {
+            items = new List<Card>();
+
+            for(int i = 0; i < itemsIn.Length; i++) {
+                items.Add(MakeCard(itemsIn[i], i));
+            }
+        }
+        public override int GetAmount() {
+            return items.Count;
         }
     }
 }
