@@ -19,7 +19,11 @@ namespace ZGenesis.BaseMod {
         internal static int MAX_PATCH_ATTEMPTS = 500;
         internal static Logger.LogLevel logLevel = Logger.LogLevel.INFO;
         internal static bool debugModeEnabled = false;
-        public BaseMod() { }
+        internal static BaseMod Instance;
+        public BaseMod() {
+            Instance = this;
+        }
+        
         public override void PreConfig() {
             config.Add("ZGenesis.zcfg");
             AddDefaultConfig("ZGenesis.zcfg", "debug_mode", new ConfigValue(Name, debugModeEnabled, EConfigValueType.Bool));
@@ -53,9 +57,7 @@ namespace ZGenesis.BaseMod {
         protected static readonly string description;
         protected static readonly Sprite sprite;
         static TestModus() {
-            Texture2D tex = new Texture2D(2, 2);
-            tex.LoadImage(File.ReadAllBytes("test.png"));
-            sprite = Sprite.Create(tex, new Rect(0,0,tex.width,tex.height), new Vector2(.5f,.5f));
+            sprite = ZUtils.LoadSpriteAsset(BaseMod.Instance.Name, "test.png");
             description = "A Test Modus.";
         }
         private new void Awake() {
@@ -64,10 +66,6 @@ namespace ZGenesis.BaseMod {
             SetColor(new Color(0, 255f, 0));
             itemCapacity = 8;
             separation = new Vector2(-complexcardsize.x / 4f, complexcardsize.y / 4f);
-        }
-        protected override void UpdatePositions() {
-            SetIcon("Queue");
-            SetColor(new Color(0, 255f, 0));
         }
         protected override bool AddItemToModus(Item toAdd) {
             if(items.Count >= itemCapacity) return false;
