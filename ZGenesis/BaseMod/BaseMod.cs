@@ -1,6 +1,10 @@
-﻿using ZGenesis.Attributes;
+﻿using System.IO;
+using ZGenesis.Attributes;
 using ZGenesis.Mod;
 using ZGenesis.Configuration;
+using ZGenesis.Registry;
+using ZGenesis.Objects;
+using UnityEngine;
 
 namespace ZGenesis.BaseMod {
     [GenesisMod]
@@ -33,6 +37,23 @@ namespace ZGenesis.BaseMod {
                 // All BaseMod patches should be patched after any existing pre-basemod patches run.
                 patcher.AddDependency("com.prebasemod.*");
             });
+        }
+        public override void PostPatch() {
+            ModusRegistry.RegisterModus(Name, "Test Modus", typeof(TestModus));
+        }
+    }
+    public class TestModus : ModdedModus {
+        public override void Load(ModusData data) => throw new System.NotImplementedException();
+        public override ModusData Save() => throw new System.NotImplementedException();
+        public static new string Description => description;
+        private static readonly string description;
+        public static new Sprite Sprite => sprite;
+        private static readonly Sprite sprite;
+        static TestModus() {
+            Texture2D tex = new Texture2D(2, 2);
+            tex.LoadImage(File.ReadAllBytes("test.png"));
+            sprite = Sprite.Create(tex, new Rect(0,0,tex.width,tex.height), new Vector2(.5f,.5f));
+            description = "A Test Modus.";
         }
     }
 }

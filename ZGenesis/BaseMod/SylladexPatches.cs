@@ -42,22 +42,27 @@ namespace ZGenesis.BaseMod {
         }
 
         // Custom modus patches
-
+        
         [ModPatch("prefix", "Assembly-CSharp", "Sylladex.SetModus")]
-        private static void CustomModusSetup_SylladexSetModus(Sylladex __instance, ref Modus ___captchaModus, ref GameObject ___modusObject, ref string ___modusName, AudioClip __clipSwitch, string modus, bool playSound) {
+        private static void CustomModusSetup_SylladexSetModus(Sylladex __instance, ref Modus ___captchaModus, ref GameObject ___modusObject, ref string ___modusName, AudioClip ___clipSwitch, string modus, bool playSound) {
+            Logger.Log("TESTF", "{0}", modus);
             if(ModusRegistry.HasModus(modus)) {
+                Logger.Log("TESTG", "{0}", modus);
                 ___captchaModus = (Modus) ___modusObject.AddComponent(ModusRegistry.GetModus(modus));
                 ___modusName = modus;
                 if(playSound) {
-                    __instance.PlaySoundEffect(__clipSwitch);
+                    Logger.Log("TESTH", "{0}", modus);
+                    __instance.PlaySoundEffect(___clipSwitch);
                 }
             }
         }
 
         [ModPatch("prefix", "Assembly-CSharp", "AddCaptchamodusAction.Start")]
         private static bool CustomModusSetup_AddCaptchaModusActionStart(AddCaptchamodusAction __instance, ref Sprite ___sprite) {
+            Logger.Log("TESTE", "{0}", __instance.modus);
             if(ModusRegistry.HasModus(__instance.modus)) {
                 ___sprite = (Sprite) ModusRegistry.GetFieldFromModus(__instance.modus, "sprite");
+                Logger.Log("TESTD", "{0}", __instance.modus);
                 return false;
             }
             return true;
@@ -65,19 +70,21 @@ namespace ZGenesis.BaseMod {
 
         [ModPatch("prefix", "Assembly-CSharp", "ModusPickerComponent.ModusChange")]
         private static bool CustomModusSetup_ModPickerComponentModusChange(ref Image ___image, string to) {
+            Logger.Log("TESTC", "{0}", to);
             if(ModusRegistry.HasModus(to)) {
+                Logger.Log("TESTB", "'{0}': '{1}'", to, (Sprite) ModusRegistry.GetFieldFromModus(to, "sprite"));
                 ___image.sprite = (Sprite) ModusRegistry.GetFieldFromModus(to, "sprite");
                 return false;
             }
             return true;
         }
-
+        
         [ModPatch("prefix", "Assembly-CSharp", "ModusPickerComponent.Awake")]
-        private static void CustomModusSetup_ModusPickerComponentAwake(string[] ___options) {
+        private static void CustomModusSetup_ModusPickerComponentAwake(ref string[] ___options) {
             if(___options != null) {
                 foreach(string option in ModusRegistry.ModusNames) {
                     if(!___options.Contains(option)) {
-                        ___options = (string[]) ___options.AddItem(option);
+                        ___options = ___options.AddItem(option).ToArray();
                     }
                 }
             }
@@ -85,24 +92,40 @@ namespace ZGenesis.BaseMod {
 
         [ModPatch("prefix", "Assembly-CSharp", "Modus.SetIcon")]
         private static bool CustomModusSetup_ModusSetIcon(Modus __instance, string title) {
+            Logger.Log("TEST??", "{0}", title);
             if(ModusRegistry.HasModus(title)) {
                 __instance.sylladex.modusIcon.sprite = (Sprite) ModusRegistry.GetFieldFromModus(title, "sprite");
+                Logger.Log("TEST", "{0}", title);
                 return false;
             }
             return true;
         }
 
         [ModPatch("postfix", "Assembly-CSharp", "ModusPicker.ReadDescriptions")]
-        private static void CustomModusSetup_ModusPickerReadDescriptions(ref Dictionary<string,string> __modusDescription) {
+        private static void CustomModusSetup_ModusPickerReadDescriptions(ref Dictionary<string,string> ___modusDescription) {
             foreach(string modus in ModusRegistry.ModusNames) {
-                __modusDescription[modus] = (string) ModusRegistry.GetFieldFromModus(modus, "description");
+                ___modusDescription[modus] = (string) ModusRegistry.GetFieldFromModus(modus, "description");
+                Logger.Log("READ", "{0}", modus);
             }
         }
 
-        [ModPatch("postfix", "Assembly-CSharp", "ModusPicker.AddModus")]
-        private static void CustomModusSetup_ModusPickerAddModus(string modus, ref Image image) {
-            if(ModusRegistry.HasModus(modus)) {
-                image.sprite = (Sprite) ModusRegistry.GetFieldFromModus(modus, "sprite");
+        private readonly static MethodInfo m_Image__set_sprite = typeof(Image).GetMethod("set_sprite", BindingFlags.Public | BindingFlags.Instance);
+        private readonly static MethodInfo m_ModusRegistry__GetFieldFromModus = typeof(ModusRegistry).GetMethod("GetFieldFromModus", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static);
+        [ModPatch("transpiler", "Assembly-CSharp", "ModusPicker.AddModus")]
+        private static IEnumerable<CodeInstruction> CustomModusSetup_ModusPickerAddModus(IEnumerable<CodeInstruction> instructions, ILGenerator generator) {
+            LocalBuilder lb = generator.DeclareLocal(typeof(Sprite));
+            foreach(CodeInstruction instruction in instructions) {
+                yield return instruction;
+                if(instruction.Calls(m_Image__set_sprite)) {
+                    yield return new CodeInstruction(OpCodes.Ldarg_1);
+                    yield return new CodeInstruction(OpCodes.Ldstr, "sprite");
+                    yield return new CodeInstruction(OpCodes.Call, m_ModusRegistry__GetFieldFromModus);
+                    yield return new CodeInstruction(OpCodes.Castclass, typeof(Sprite));
+                    yield return new CodeInstruction(OpCodes.Stloc_S, lb.LocalIndex);
+                    yield return new CodeInstruction(OpCodes.Ldloc_1);
+                    yield return new CodeInstruction(OpCodes.Ldloc_S, lb.LocalIndex);
+                    yield return new CodeInstruction(OpCodes.Call, m_Image__set_sprite);
+                }
             }
         }
     }

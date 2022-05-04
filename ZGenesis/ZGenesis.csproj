@@ -23,6 +23,9 @@
     <Reference Include="UnityEngine.CoreModule">
       <HintPath>..\BuildDeps\UnityEngine.CoreModule.dll</HintPath>
     </Reference>
+    <Reference Include="UnityEngine.ImageConversionModule">
+      <HintPath>..\BuildDeps\UnityEngine.ImageConversionModule.dll</HintPath>
+    </Reference>
     <Reference Include="UnityEngine.UI">
       <HintPath>..\BuildDeps\UnityEngine.UI.dll</HintPath>
     </Reference>

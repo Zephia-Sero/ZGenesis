@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace ZGenesis.Objects {
     public abstract class ModdedModus : Modus {
-        public static string description;
-        public static Sprite sprite;
+        public static string Description { get; private set; }
+        public static Sprite Sprite { get; private set; }
     }
 }
