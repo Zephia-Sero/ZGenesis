@@ -1,22 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
-using System.Reflection.Emit;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using ZGenesis.Objects.Default;
 
 namespace ZGenesis.Registry {
     public static class ModusRegistry {
         private static readonly Dictionary<string, Type> modusRegistry = new Dictionary<string, Type>();
-        static ModusRegistry() {
-            /*RegisterModus("ZGenesis", "Queue", typeof(ClonedFIFOModus));
-            RegisterModus("ZGenesis", "Stack", typeof(ClonedFILOModus));
-            RegisterModus("ZGenesis", "Tree", typeof(ClonedTreeModus));
-            RegisterModus("ZGenesis", "Hashmap", typeof(ClonedHashmapModus));
-            RegisterModus("ZGenesis", "Array", typeof(ClonedArrayModus));*/
-        }
         public static void RegisterModus(string modName, string name, Type type) {
             if(!modusRegistry.ContainsKey(name)) {
                 modusRegistry[name] = type;

@@ -7,8 +7,6 @@ using System.Reflection.Emit;
 using ZGenesis.Attributes;
 using ZGenesis.Events;
 using ZGenesis.Registry;
-using ZGenesis.Objects;
-using ZGenesis.Objects.Default;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -49,17 +47,6 @@ namespace ZGenesis.BaseMod {
             if(ModusRegistry.HasModus(modus)) {
                 Type t = ModusRegistry.GetModus(modus);
                 Component component = ___modusObject.AddComponent(t);
-                if(t == typeof(ClonedFIFOModus)) {
-                    ((ClonedFIFOModus) component).basedOn = new FIFOModus();
-                } else if(t == typeof(ClonedFILOModus)) {
-                    ((ClonedFILOModus) component).basedOn = new FILOModus();
-                } else if(t == typeof(ClonedArrayModus)) {
-                    ((ClonedArrayModus) component).basedOn = new ArrayModus();
-                } else if(t == typeof(ClonedHashmapModus)) {
-                    ((ClonedHashmapModus) component).basedOn = new HashmapModus();
-                } else if(t == typeof(ClonedTreeModus)) {
-                    ((ClonedTreeModus) component).basedOn = new TreeModus();
-                }
                 ___captchaModus = (Modus) component;
                 ___modusName = modus;
                 if(playSound) {
@@ -74,7 +61,6 @@ namespace ZGenesis.BaseMod {
         private static void CustomModusSetup_SylladexStart(ref List<string> ___modi) {
             foreach(string modus in ModusRegistry.ModusNames) {
                 if(!___modi.Contains(modus)) {
-                    Logger.Log("TEST", "Adding modus {0}", modus);
                     ___modi.Add(modus);
                 }
             }
