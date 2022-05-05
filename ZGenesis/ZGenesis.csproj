@@ -5,6 +5,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="ManualPatch\InternalPatcher.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="ManualPatch\InternalPatcher.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Reference Include="0Harmony">
       <HintPath>..\BuildDeps\0Harmony.dll</HintPath>
     </Reference>
