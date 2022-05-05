@@ -23,6 +23,12 @@ namespace ZGenesis {
         public static void Log(string modname, string message, params object[] args) {
             Log(LogLevel.INFO, modname, message, args);
         }
+        public static void Log(string modname, string message) {
+            Log(modname, message, new object[] { "h" });
+        }
+        public static void Log(LogLevel level, string modname, string message) {
+            Log(level, modname, message, new object[] { "h" });
+        }
         public static void Log(LogLevel level, string modname, string message, params object[] args) {
             if(level < BaseMod.BaseMod.logLevel) return;
             string time = DateTime.Now.ToString("HH:mm:ss+fff");
