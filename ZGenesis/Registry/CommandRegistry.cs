@@ -16,7 +16,8 @@ namespace ZGenesis.Registry {
             }
         }
         public static bool TryRun(string command) {
-            return false;
+            Logger.Log("Command attempt", command);
+            return true;
         }
     }
 }
