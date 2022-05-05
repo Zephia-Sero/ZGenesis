@@ -46,22 +46,5 @@ namespace ZGenesis.BaseMod {
                 patcher.AddDependency("com.prebasemod.*");
             });
         }
-        public override void PostPatch() {
-            CommandRegistry.Register(Name, "echo", new TestCommand());
-        }
     }
-    public class TestCommand : ModdedCommand {
-        public override bool Safe => true;
-        public override bool IsCheat => false;
-        public override string Help => "Prints text to the client's chat.";
-
-        public override void Execute(string[] args) {
-            if(args.Length >= 2) {
-                GlobalChat.WriteCommandMessage(args.Skip(1).Aggregate((a,b) => {
-                    return a + " " + b;
-                }));
-            } else GlobalChat.WriteCommandMessage("");
-        }
-    }
-
 }
