@@ -41,6 +41,9 @@ namespace ZGenesis.Registry {
                         GlobalChat.WriteCommandMessage("");
                     }
                 } else if(commands.TryGetValue(args[0], out ModdedCommand cmd)) {
+                    if(cmd.IsCheat) {
+                        GlobalChat.Pester(MultiplayerSettings.playerName + " was a naughty cheater and ran the command /" + args[0], false);
+                    }
                     if(cmd.Safe) {
                         cmd.Execute(args);
                     } else {

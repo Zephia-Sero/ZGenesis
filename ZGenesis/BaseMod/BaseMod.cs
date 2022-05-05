@@ -52,6 +52,7 @@ namespace ZGenesis.BaseMod {
     }
     public class TestCommand : ModdedCommand {
         public override bool Safe => true;
+        public override bool IsCheat => false;
         public override string Help => "Prints text to the client's chat.";
 
         public override void Execute(string[] args) {
