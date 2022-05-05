@@ -46,5 +46,18 @@ namespace ZGenesis.BaseMod {
                 patcher.AddDependency("com.prebasemod.*");
             });
         }
+        public override void PostPatch() {
+            CommandRegistry.Register(Name, "testCommand", new TestCommand());
+        }
     }
+    public class TestCommand : ModdedCommand {
+        public new string help = "Just a test command.";
+        public new bool safe = true;
+        public override void Execute(string[] args) {
+            if(args.Length >= 1) {
+                GlobalChat.WriteCommandMessage(args[0]);
+            } else GlobalChat.WriteCommandMessage("<color=red>No argument!</color>");
+        }
+    }
+
 }
