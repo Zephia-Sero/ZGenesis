@@ -30,6 +30,9 @@ namespace ZGenesis {
                 Directory.CreateDirectory("./res");
             }
             LoadMods();
+            if(!VerifyNoDuplicateMods() || VerifyDependencies().Count > 0) {
+                Application.Quit(1);
+            }
             ConfigureMods();
             if(BaseMod.BaseMod.debugModeEnabled) {
                 Logger.Log(Logger.LogLevel.DEBUG, "ZGenesis", "DEBUG MODE ENABLED. Enabling Harmony debug mode.");
@@ -45,6 +48,67 @@ namespace ZGenesis {
                     Logger.Log(Logger.LogLevel.DEBUG, "ZGenesis", evt.ToString());
                 });
             }
+        }
+        private static bool VerifyNoDuplicateMods() {
+            bool goodToGo = true;
+            loadedMods.ForEach(mod1 => {
+                loadedMods.ForEach(mod2 => {
+                    if(mod1 == mod2) return;
+                    if(mod1.ModNamespace == mod2.ModNamespace) {
+                        Logger.Log(Logger.LogLevel.FATAL, mod1.Name, "Duplicate versions of {0} found.", mod1.ModNamespace);
+                        goodToGo = false;
+                    }
+                });
+            });
+            return goodToGo;
+        }
+        private static List<GenesisMod> VerifyDependencies() {
+            List<GenesisMod> modsWithMissingDependencies = new List<GenesisMod>();
+            loadedMods.ForEach(mod => {
+                bool success = true;
+                foreach(string requirement in mod.Requires) {
+                    string[] split = requirement.Split('=');
+                    if(split.Length == 2) {
+                        string modNamespace = split[0];
+                        string version = split[1];
+                        if(!string.IsNullOrEmpty(modNamespace)) {
+                            if(!string.IsNullOrEmpty(version)) {
+                                if(version.Count(ch => { return ch == '*'; }) <= 1) {
+                                    string[] versSplit = version.Split('*');
+                                    string versStarts = versSplit[0];
+                                    string versEnds = versSplit[1];
+                                    foreach(GenesisMod modToTest in loadedMods) {
+                                        if(modToTest.ModNamespace == modNamespace) {
+                                            if(modToTest.Version.StartsWith(versStarts) && modToTest.Version.EndsWith(versEnds)) {
+                                                success = true;
+                                            } else {
+                                                Logger.Log(Logger.LogLevel.FATAL, mod.Name, "Wrong version of mod {0}. Expected version {2}, got {3}.", modNamespace, version, modToTest.Version);
+                                                success = false;
+                                            }
+                                        }
+                                    }
+                                } else {
+                                    Logger.Log(Logger.LogLevel.FATAL, mod.Name, "Invalid requirement syntax: '{1}'. Only one wildcard * is allowed.", requirement);
+                                    success = false;
+                                }
+                            } else {
+                                Logger.Log(Logger.LogLevel.FATAL, mod.Name, "Invalid requirement syntax: '{1}'. Mod version field is empty.", requirement);
+                                success = false;
+                            }
+                        } else {
+                            Logger.Log(Logger.LogLevel.FATAL, mod.Name, "Invalid requirement syntax: '{1}'. Mod namespace field is empty.", requirement);
+                            success = false;
+                        }
+                    } else {
+                        Logger.Log(Logger.LogLevel.FATAL, mod.Name, "Invalid requirement syntax: '{1}'. Only one = character is allowed.", requirement);
+                        success = false;
+                    }
+                    if(!success) {
+                        modsWithMissingDependencies.Add(mod);
+                    }
+                }
+            });
+            return modsWithMissingDependencies;
         }
         private static void LoadMods() {
             Logger.Log(Logger.LogLevel.ESSENTIAL, "ZGenesis", "Loading mod assemblies");
