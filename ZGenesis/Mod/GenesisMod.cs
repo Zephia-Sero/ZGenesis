@@ -59,6 +59,7 @@ namespace ZGenesis.Mod {
         public abstract string ModNamespace { get; }
         public abstract string Description { get; }
         public abstract string Version { get; }
+        public abstract string[] Requires { get; }
         public virtual void PreConfig() { }
         public virtual void PostConfig() { }
         public virtual void PrePatch() { }

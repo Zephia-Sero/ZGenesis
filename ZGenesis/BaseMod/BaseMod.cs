@@ -15,7 +15,8 @@ namespace ZGenesis.BaseMod {
         public override string Name => "BaseMod";
         public override string ModNamespace => "com.zgenesis";
         public override string Description => "Base ZGenesis mod, including many event hooks for other mods to use.";
-        public override string Version => "v0.1.0";
+        public override string Version => "v0.2.0";
+        public override string[] Requires => new string[] { };
         internal static int MAX_PATCH_ATTEMPTS = 500;
         internal static Logger.LogLevel logLevel = Logger.LogLevel.INFO;
         internal static bool debugModeEnabled = false;
