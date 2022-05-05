@@ -47,16 +47,19 @@ namespace ZGenesis.BaseMod {
             });
         }
         public override void PostPatch() {
-            CommandRegistry.Register(Name, "testCommand", new TestCommand());
+            CommandRegistry.Register(Name, "echo", new TestCommand());
         }
     }
     public class TestCommand : ModdedCommand {
-        public new string help = "Just a test command.";
-        public new bool safe = true;
+        public override bool Safe => true;
+        public override string Help => "Prints text to the client's chat.";
+
         public override void Execute(string[] args) {
-            if(args.Length >= 1) {
-                GlobalChat.WriteCommandMessage(args[0]);
-            } else GlobalChat.WriteCommandMessage("<color=red>No argument!</color>");
+            if(args.Length >= 2) {
+                GlobalChat.WriteCommandMessage(args.Skip(1).Aggregate((a,b) => {
+                    return a + " " + b;
+                }));
+            } else GlobalChat.WriteCommandMessage("");
         }
     }
 

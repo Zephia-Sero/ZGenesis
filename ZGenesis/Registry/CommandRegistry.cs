@@ -24,24 +24,24 @@ namespace ZGenesis.Registry {
                 if(args[0] == "help") {
                     if(args.Length > 1) {
                         if(commands.TryGetValue(args[1], out ModdedCommand other)) {
-                            if(!other.safe) {
+                            if(!other.Safe) {
                                 GlobalChat.WriteCommandMessage("<color=red>This is an extremely dangerous command. Use with caution, only when testing.</color>");
                             }
-                            GlobalChat.WriteCommandMessage(other.help);
+                            GlobalChat.WriteCommandMessage(other.Help);
                         } else return false;
                     } else {
                         GlobalChat.WriteCommandMessage("This is a list of all MODDED commands. Those marked in red are dangerous, and can permanently make your session unplayable. Run /help commandname to get more information about what a command does.");
                         foreach(KeyValuePair<string, ModdedCommand> keyValuePair in commands) {
                             GlobalChat.WriteCommandMessage(
-                                (keyValuePair.Value.safe ? "" : "<color=red>") +
+                                (keyValuePair.Value.Safe ? "" : "<color=red>") +
                                 "/" + keyValuePair.Key +
-                                (keyValuePair.Value.safe ? "" : "</color>")
+                                (keyValuePair.Value.Safe ? "" : "</color>")
                             );
                         }
                         GlobalChat.WriteCommandMessage("");
                     }
                 } else if(commands.TryGetValue(args[0], out ModdedCommand cmd)) {
-                    if(cmd.safe) {
+                    if(cmd.Safe) {
                         cmd.Execute(args);
                     } else {
                         GlobalChat.WriteCommandMessage("/" + args[0] + " is intended for testing and is very likely to break your session. Are you sure you want to do this? (y/n)");
